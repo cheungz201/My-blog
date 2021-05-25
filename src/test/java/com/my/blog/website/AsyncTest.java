@@ -32,9 +32,9 @@ public class AsyncTest {
         Future<String> task1 = task.doTaskOne();
         Future<String> task2 = task.doTaskTwo();
         Future<String> task3 = task.doTaskThree();
-        while(true) {
+        while (true) {
 
-            if(task1.isDone() && task2.isDone() && task3.isDone()) {
+            if (task1.isDone() && task2.isDone() && task3.isDone()) {
                 // 三个任务都调用完成，退出循环等待
                 break;
             }
@@ -45,16 +45,15 @@ public class AsyncTest {
     }
 
 
-
 }
 
 @Component
-class Task{
+class Task {
 
-    private static Random random =new Random();
+    private static Random random = new Random();
 
     @Async
-     Future<String> doTaskOne() throws Exception {
+    Future<String> doTaskOne() throws Exception {
         System.out.println("开始做任务一");
         long start = System.currentTimeMillis();
         Thread.sleep(random.nextInt(10000));

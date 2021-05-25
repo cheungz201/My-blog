@@ -1086,6 +1086,7 @@ public class ContentVoExample {
     }
 
     /**
+     *
      */
     public static class Criteria extends GeneratedCriteria {
 

@@ -976,6 +976,7 @@ public class CommentVoExample {
     }
 
     /**
+     *
      */
     public static class Criteria extends GeneratedCriteria {
 

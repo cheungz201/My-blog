@@ -11,7 +11,7 @@ import java.util.List;
 
 /**
  * 站点服务
- *
+ * <p>
  * Created by 13 on 2017/2/23.
  */
 public interface ISiteService {
@@ -35,6 +35,7 @@ public interface ISiteService {
 
     /**
      * 查询一条评论
+     *
      * @param coid
      * @return
      */
@@ -42,6 +43,7 @@ public interface ISiteService {
 
     /**
      * 系统备份
+     *
      * @param bk_type
      * @param bk_path
      * @param fmt
@@ -66,6 +68,7 @@ public interface ISiteService {
 
     /**
      * 获取分类/标签列表
+     *
      * @return
      */
     List<MetaDto> metas(String type, String orderBy, int limit);

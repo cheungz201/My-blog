@@ -586,6 +586,7 @@ public class MetaVoExample {
     }
 
     /**
+     *
      */
     public static class Criteria extends GeneratedCriteria {
 

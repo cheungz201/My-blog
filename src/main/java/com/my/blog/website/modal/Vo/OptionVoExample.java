@@ -336,6 +336,7 @@ public class OptionVoExample {
     }
 
     /**
+     *
      */
     public static class Criteria extends GeneratedCriteria {
 

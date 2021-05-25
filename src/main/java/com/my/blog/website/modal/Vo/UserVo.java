@@ -3,7 +3,7 @@ package com.my.blog.website.modal.Vo;
 import java.io.Serializable;
 
 /**
- * @author 
+ * @author
  */
 public class UserVo implements Serializable {
     /**

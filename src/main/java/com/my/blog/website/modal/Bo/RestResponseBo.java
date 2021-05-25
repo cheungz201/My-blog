@@ -2,7 +2,8 @@ package com.my.blog.website.modal.Bo;
 
 /**
  * rest返回对象
- *^
+ * ^
+ *
  * @param <T>
  */
 public class RestResponseBo<T> {

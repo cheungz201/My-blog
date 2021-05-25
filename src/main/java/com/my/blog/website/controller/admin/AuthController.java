@@ -48,6 +48,7 @@ public class AuthController extends BaseController {
 
     /**
      * 管理后台登录
+     *
      * @param username
      * @param password
      * @param remeber_me
@@ -90,6 +91,7 @@ public class AuthController extends BaseController {
 
     /**
      * 注销
+     *
      * @param session
      * @param response
      */

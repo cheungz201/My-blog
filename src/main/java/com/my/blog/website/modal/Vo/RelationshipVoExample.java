@@ -246,6 +246,7 @@ public class RelationshipVoExample {
     }
 
     /**
+     *
      */
     public static class Criteria extends GeneratedCriteria {
 

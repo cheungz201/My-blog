@@ -3,7 +3,7 @@ package com.my.blog.website.modal.Vo;
 import java.io.Serializable;
 
 /**
- * @author 
+ * @author
  */
 public class LogVo implements Serializable {
     /**
@@ -35,7 +35,6 @@ public class LogVo implements Serializable {
      * 日志创建时间
      */
     private Integer created;
-
 
 
     private static final long serialVersionUID = 1L;

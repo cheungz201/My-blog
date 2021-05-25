@@ -34,9 +34,9 @@ public interface MetaVoMapper {
 
     int updateByPrimaryKey(MetaVo record);
 
-    List<MetaDto> selectFromSql(Map<String,Object> paraMap);
+    List<MetaDto> selectFromSql(Map<String, Object> paraMap);
 
-    MetaDto selectDtoByNameAndType(@Param("name") String name,@Param("type") String type);
+    MetaDto selectDtoByNameAndType(@Param("name") String name, @Param("type") String type);
 
     Integer countWithSql(Integer mid);
 }

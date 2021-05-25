@@ -516,6 +516,7 @@ public class LogVoExample {
     }
 
     /**
+     *
      */
     public static class Criteria extends GeneratedCriteria {
 

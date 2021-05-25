@@ -30,6 +30,7 @@ public class LinksController extends BaseController {
 
     /**
      * 友链
+     *
      * @param request
      * @return
      */

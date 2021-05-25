@@ -786,6 +786,7 @@ public class UserVoExample {
     }
 
     /**
+     *
      */
     public static class Criteria extends GeneratedCriteria {
 

@@ -46,6 +46,7 @@ public class ArticleController extends BaseController {
 
     /**
      * 文章列表
+     *
      * @param page
      * @param limit
      * @param request
@@ -57,13 +58,14 @@ public class ArticleController extends BaseController {
         ContentVoExample contentVoExample = new ContentVoExample();
         contentVoExample.setOrderByClause("created desc");
         contentVoExample.createCriteria().andTypeEqualTo(Types.ARTICLE.getType());
-        PageInfo<ContentVo> contentsPaginator = contentsService.getArticlesWithpage(contentVoExample,page,limit);
+        PageInfo<ContentVo> contentsPaginator = contentsService.getArticlesWithpage(contentVoExample, page, limit);
         request.setAttribute("articles", contentsPaginator);
         return "admin/article_list";
     }
 
     /**
      * 文章发表
+     *
      * @param request
      * @return
      */
@@ -76,6 +78,7 @@ public class ArticleController extends BaseController {
 
     /**
      * 文章编辑
+     *
      * @param cid
      * @param request
      * @return
@@ -92,6 +95,7 @@ public class ArticleController extends BaseController {
 
     /**
      * 文章发表
+     *
      * @param contents
      * @param request
      * @return
@@ -99,7 +103,7 @@ public class ArticleController extends BaseController {
     @PostMapping(value = "/publish")
     @ResponseBody
     @Transactional(rollbackFor = TipException.class)
-    public RestResponseBo publishArticle(ContentVo contents,  HttpServletRequest request) {
+    public RestResponseBo publishArticle(ContentVo contents, HttpServletRequest request) {
         UserVo users = this.user(request);
         contents.setAuthorId(users.getUid());
         contents.setType(Types.ARTICLE.getType());
@@ -122,6 +126,7 @@ public class ArticleController extends BaseController {
 
     /**
      * 文章更新
+     *
      * @param contents
      * @param request
      * @return
@@ -129,7 +134,7 @@ public class ArticleController extends BaseController {
     @PostMapping(value = "/modify")
     @ResponseBody
     @Transactional(rollbackFor = TipException.class)
-    public RestResponseBo modifyArticle(ContentVo contents,HttpServletRequest request) {
+    public RestResponseBo modifyArticle(ContentVo contents, HttpServletRequest request) {
         UserVo users = this.user(request);
         contents.setAuthorId(users.getUid());
         contents.setType(Types.ARTICLE.getType());
@@ -149,6 +154,7 @@ public class ArticleController extends BaseController {
 
     /**
      * 删除文章
+     *
      * @param cid
      * @param request
      * @return
@@ -159,7 +165,7 @@ public class ArticleController extends BaseController {
     public RestResponseBo delete(@RequestParam int cid, HttpServletRequest request) {
         try {
             contentsService.deleteByCid(cid);
-            logService.insertLog(LogActions.DEL_ARTICLE.getAction(), cid+"", request.getRemoteAddr(), this.getUid(request));
+            logService.insertLog(LogActions.DEL_ARTICLE.getAction(), cid + "", request.getRemoteAddr(), this.getUid(request));
         } catch (Exception e) {
             String msg = "文章删除失败";
             if (e instanceof TipException) {

@@ -7,7 +7,7 @@ import com.my.blog.website.utils.TaleUtils;
  * Created by shuaihan on 2017/4/2.
  */
 public class Pwdtest {
-    public static void main(String args[]){
+    public static void main(String args[]) {
         UserVo user = new UserVo();
         user.setUsername("admin");
         user.setPassword("asdfasdfs");

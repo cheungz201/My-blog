@@ -27,6 +27,7 @@ public class IndexControllerTest {
 
     @Autowired
     private MockMvc mockMvc;
+
     @Test
     @Ignore
     public void index() throws Exception {
