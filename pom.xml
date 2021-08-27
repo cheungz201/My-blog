@@ -165,13 +165,16 @@
 
     <!-- 普通的maven打包方式 -->
     <build>
+
         <plugins>
             <plugin>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
             </plugin>
+
         </plugins>
+
     </build>
-    <!-- 普通的maven打包方式 -->
+
 
 </project>
