@@ -20,7 +20,8 @@ public class WebMvcConfig extends WebMvcConfigurerAdapter {
 
     @Override
     public void addInterceptors(InterceptorRegistry registry) {
-        registry.addInterceptor(baseInterceptor);
+        registry.addInterceptor(baseInterceptor)
+                .excludePathPatterns("/admin/**","/user/**","/dist/**");
     }
 
     /**
@@ -30,7 +31,8 @@ public class WebMvcConfig extends WebMvcConfigurerAdapter {
      */
     @Override
     public void addResourceHandlers(ResourceHandlerRegistry registry) {
-        registry.addResourceHandler("/upload/**").addResourceLocations("file:" + TaleUtils.getUplodFilePath() + "upload/");
+        registry.addResourceHandler("/upload/**")
+                .addResourceLocations("file:" + TaleUtils.getUplodFilePath() + "upload/");
         super.addResourceHandlers(registry);
     }
 }
