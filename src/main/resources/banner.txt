@@ -24,6 +24,6 @@ bbbbbbbbbbbbbbbb   llllllll   ooooooooooo       gggggggg::::::g
                                             gg:::::::::::::g
                                               ggg::::::ggg
                                                  gggggg
-${AnsiColor.BLACK}
+${AnsiColor.MAGENTA}
 Application Version: ${application.version}${application.formatted-version}
 Spring Boot Version: ${spring-boot.version}${spring-boot.formatted-version}

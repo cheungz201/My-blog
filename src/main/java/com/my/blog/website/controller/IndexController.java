@@ -26,12 +26,14 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Controller;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.ModelAndView;
 
 import javax.annotation.Resource;
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
+import java.io.IOException;
 import java.net.URLEncoder;
 import java.util.List;
 
@@ -56,11 +58,22 @@ public class IndexController extends BaseController {
     private ISiteService siteService;
 
     /**
-     * 首页
+     * 主页
      *
      * @return
      */
-    @GetMapping(value = {"/", "index"})
+
+    @GetMapping(value = {"/", "index"} )
+    public void baseIndex(HttpServletRequest request,HttpServletResponse response) throws IOException {
+        response.sendRedirect(request.getContextPath()+"/home/index.html");
+    }
+
+    /**
+     * 博客首页
+     *
+     * @return
+     */
+    @GetMapping("/blog")
     public String index(HttpServletRequest request, @RequestParam(value = "limit", defaultValue = "12") int limit) {
         return this.index(request, 1, limit);
     }
@@ -341,7 +354,7 @@ public class IndexController extends BaseController {
      * @param chits
      */
     @Transactional(rollbackFor = TipException.class)
-    private void updateArticleHit(Integer cid, Integer chits) {
+    void updateArticleHit(Integer cid, Integer chits) {
         Integer hits = cache.hget("article", "hits");
         if (chits == null) {
             chits = 0;
