@@ -8,7 +8,9 @@ import java.util.Map;
 import java.util.Set;
 
 /**
- * Created by BlueT on 2017/3/3.
+ * 一些常用字段
+ * @author Zhang Zhe
+ * @date 2021/5/3
  */
 @Component
 public class WebConst {

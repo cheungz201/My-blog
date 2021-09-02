@@ -30,6 +30,12 @@ public abstract class BaseController {
         return this;
     }
 
+    /**
+     * @Description:
+     * @Author: Zhang Zhe
+     * @Date: 2021/8/30 16:25
+     * @Return:
+     */
     public BaseController keywords(HttpServletRequest request, String keywords) {
         request.setAttribute("keywords", keywords);
         return this;

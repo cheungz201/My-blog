@@ -17,7 +17,6 @@ import org.springframework.transaction.annotation.EnableTransactionManagement;
 
 import javax.sql.DataSource;
 import java.sql.SQLException;
-
 @MapperScan("com.my.blog.website.dao")
 @SpringBootApplication
 @EnableTransactionManagement
@@ -33,7 +32,6 @@ public class CoreApplication extends SpringBootServletInitializer {
     public DataSource dataSource() throws SQLException {
         DruidDataSource druidDataSource = new DruidDataSource();
         druidDataSource.setFilters("stat");
-
         return druidDataSource;
     }
 

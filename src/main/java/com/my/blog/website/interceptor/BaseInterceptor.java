@@ -10,14 +10,14 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 import org.springframework.web.servlet.HandlerInterceptor;
 import org.springframework.web.servlet.ModelAndView;
-
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 /**
- * 自定义拦截器
- * Created by BlueT on 2017/3/9.
+ * @Description: 自定义的全局拦截器
+ * @Author: Zhang Zhe
+ * @Date: 2021/9/1 13:10
  */
 @Component
 public class BaseInterceptor implements HandlerInterceptor {
@@ -42,7 +42,6 @@ public class BaseInterceptor implements HandlerInterceptor {
 
         LOGGE.info("UserAgent: {}", request.getHeader(USER_AGENT));
         LOGGE.info("用户访问地址: {}, 来路地址: {}", uri, IPKit.getIpAddrByRequest(request));
-
 
         //请求拦截处理
         UserVo user = TaleUtils.getLoginUser(request);
