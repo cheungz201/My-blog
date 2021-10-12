@@ -1,15 +1,16 @@
 package com.my.blog.website.interceptor;
 
+import com.my.blog.website.constant.WebConst;
+import com.my.blog.website.dto.Types;
 import com.my.blog.website.modal.Vo.UserVo;
 import com.my.blog.website.service.IUserService;
 import com.my.blog.website.utils.*;
-import com.my.blog.website.constant.WebConst;
-import com.my.blog.website.dto.Types;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 import org.springframework.web.servlet.HandlerInterceptor;
 import org.springframework.web.servlet.ModelAndView;
+
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -58,7 +59,7 @@ public class BaseInterceptor implements HandlerInterceptor {
             return false;
         }
         //设置get请求的token
-        if (request.getMethod().equals("GET")) {
+        if ("GET".equals(request.getMethod())) {
             String csrf_token = UUID.UU64();
             // 默认存储30分钟
             cache.hset(Types.CSRF_TOKEN.getType(), csrf_token, uri, 30 * 60);

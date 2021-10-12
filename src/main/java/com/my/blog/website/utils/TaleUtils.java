@@ -31,7 +31,7 @@ import java.util.regex.Pattern;
 /**
  * Tale工具类
  * <p>
- * Created by 13 on 2017/2/21.
+ * Created by 13 on 2021/2/21.
  */
 public class TaleUtils {
     private static final Logger LOGGER = LoggerFactory.getLogger(TaleUtils.class);
@@ -191,10 +191,10 @@ public class TaleUtils {
                 DriverManagerDataSource managerDataSource = new DriverManagerDataSource();
                 //        TODO 对不同数据库支持
                 managerDataSource.setDriverClassName("com.mysql.jdbc.Driver");
-                managerDataSource.setPassword(properties.getProperty("spring.datasource.password"));
-                String str = "jdbc:mysql://" + properties.getProperty("spring.datasource.url") + "/" + properties.getProperty("spring.datasource.dbname") + "?useUnicode=true&characterEncoding=utf-8&useSSL=false";
-                managerDataSource.setUrl(str);
+                String str =  properties.getProperty("spring.datasource.url");
                 managerDataSource.setUsername(properties.getProperty("spring.datasource.username"));
+                managerDataSource.setPassword(properties.getProperty("spring.datasource.password"));
+                managerDataSource.setUrl(str);
                 newDataSource = managerDataSource;
             }
         }
