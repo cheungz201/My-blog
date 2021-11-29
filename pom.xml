@@ -165,6 +165,7 @@
 
     <!-- 普通的maven打包方式 -->
     <build>
+        <finalName>blog</finalName>
 
         <plugins>
             <plugin>

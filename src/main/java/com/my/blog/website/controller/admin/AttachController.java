@@ -40,7 +40,7 @@ public class AttachController extends BaseController {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(AttachController.class);
 
-    public static final String CLASSPATH = TaleUtils.getUplodFilePath();
+    public static final String CLASSPATH = TaleUtils.getUploadFilePath();
 
     @Resource
     private IAttachService attachService;
@@ -120,7 +120,8 @@ public class AttachController extends BaseController {
             }
             attachService.deleteById(id);
             new File(CLASSPATH + attach.getFkey()).delete();
-            logService.insertLog(LogActions.DEL_ARTICLE.getAction(), attach.getFkey(), request.getRemoteAddr(), this.getUid(request));
+            logService.insertLog(LogActions.DEL_ARTICLE.getAction(), attach.getFkey(),
+                    request.getRemoteAddr(), this.getUid(request));
         } catch (Exception e) {
             String msg = "附件删除失败";
             if (e instanceof TipException) {

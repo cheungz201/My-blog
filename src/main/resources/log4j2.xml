@@ -7,7 +7,7 @@
     <!-- 常量引用 -->
     <properties>
         <!--<property name="LOG_HOME">/opt/logs/api-logs/</property>-->
-        <property name="LOG_HOME">./mylogs</property>
+        <property name="LOG_HOME">/usr/local/blog-website/log</property>
         <property name="FORMAT">%d{yyyy-MM-dd HH:mm:ss.SSS} [%t] %-5level %logger{36} - %msg%n</property>
     </properties>
 
@@ -29,7 +29,7 @@
     </appenders>
 
     <!-- 接收appender -->
-    <loggers>
+    <loggers>`
         <logger name="org.apache.http" level="warn"/>
         <!-- Spring -->
         <logger name="org.springframework" level="WARN"/>

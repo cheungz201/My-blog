@@ -73,7 +73,7 @@ public class TaleUtils {
      * @return
      */
     public static int getCurrentTime() {
-        return (int) (new Date().getTime() / 1000);
+        return (int) (System.currentTimeMillis() / 1000);
     }
 
     /**
@@ -182,20 +182,22 @@ public class TaleUtils {
      * @return
      */
     public static DataSource getNewDataSource() {
-        if (newDataSource == null) synchronized (TaleUtils.class) {
-            if (newDataSource == null) {
-                Properties properties = TaleUtils.getPropFromFile("application-jdbc.properties");
-                if (properties.size() == 0) {
-                    return newDataSource;
+        if (newDataSource == null) {
+            synchronized (TaleUtils.class) {
+                if (newDataSource == null) {
+                    Properties properties = TaleUtils.getPropFromFile("application-jdbc.properties");
+                    if (properties.size() == 0) {
+                        return newDataSource;
+                    }
+                    DriverManagerDataSource managerDataSource = new DriverManagerDataSource();
+                    //        TODO 对不同数据库支持
+                    managerDataSource.setDriverClassName("com.mysql.jdbc.Driver");
+                    String str =  properties.getProperty("spring.datasource.url");
+                    managerDataSource.setUsername(properties.getProperty("spring.datasource.username"));
+                    managerDataSource.setPassword(properties.getProperty("spring.datasource.password"));
+                    managerDataSource.setUrl(str);
+                    newDataSource = managerDataSource;
                 }
-                DriverManagerDataSource managerDataSource = new DriverManagerDataSource();
-                //        TODO 对不同数据库支持
-                managerDataSource.setDriverClassName("com.mysql.jdbc.Driver");
-                String str =  properties.getProperty("spring.datasource.url");
-                managerDataSource.setUsername(properties.getProperty("spring.datasource.username"));
-                managerDataSource.setPassword(properties.getProperty("spring.datasource.password"));
-                managerDataSource.setUrl(str);
-                newDataSource = managerDataSource;
             }
         }
         return newDataSource;
@@ -436,9 +438,9 @@ public class TaleUtils {
             int index = name.lastIndexOf(".");
             String ext = null;
             if (index >= 0) {
-                ext = StringUtils.trimToNull(name.substring(index + 1));
+                ext = StringUtils.trimToNull(name.substring(index));
             }
-            return prefix + "/" + UUID.UU32() + "." + (ext == null ? null : (ext));
+            return prefix +"/"+ UUID.UU32() + (ext == null ? null : (ext));
         }
     }
 
@@ -480,21 +482,14 @@ public class TaleUtils {
     }
 
     /**
-     * 获取保存文件的位置,jar所在目录的路径
+     * 返回文件保存路径
      *
      * @return
      */
-    public static String getUplodFilePath() {
-        String path = TaleUtils.class.getProtectionDomain().getCodeSource().getLocation().getPath();
-        path = path.substring(1, path.length());
-        try {
-            path = java.net.URLDecoder.decode(path, "utf-8");
-        } catch (UnsupportedEncodingException e) {
-            e.printStackTrace();
+    public static String getUploadFilePath() {
+        if ((System.getProperty("os.name").startsWith("Windows"))){
+            return new File("").getAbsolutePath()+"\\";
         }
-        int lastIndex = path.lastIndexOf("/") + 1;
-        path = path.substring(0, lastIndex);
-        File file = new File("");
-        return file.getAbsolutePath() + "/";
+        return "/usr/local/blog-website/file/";
     }
 }
