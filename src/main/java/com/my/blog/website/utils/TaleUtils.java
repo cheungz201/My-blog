@@ -29,32 +29,46 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
- * Tale工具类
- * <p>
- * Created by 13 on 2021/2/21.
+ *
+ * <p>Tale工具类
+ *
+ * @author Zhang Zhe
+ * @date 2021/2/21
  */
 public class TaleUtils {
     private static final Logger LOGGER = LoggerFactory.getLogger(TaleUtils.class);
 
-    private static DataSource newDataSource;
+    private volatile static DataSource newDataSource;
+
     /**
      * 一个月
      */
     private static final int one_month = 30 * 24 * 60 * 60;
+
     /**
      * 匹配邮箱正则
      */
     private static final Pattern VALID_EMAIL_ADDRESS_REGEX =
             Pattern.compile("^[A-Z0-9._%+-]+@[A-Z0-9.-]+\\.[A-Z]{2,6}$", Pattern.CASE_INSENSITIVE);
     private static final Pattern SLUG_REGEX = Pattern.compile("^[A-Za-z0-9_-]{5,100}$", Pattern.CASE_INSENSITIVE);
+
     /**
      * markdown解析器
      */
     private static Parser parser = Parser.builder().build();
+
     /**
      * 获取文件所在目录
      */
     private static String location = TaleUtils.class.getClassLoader().getResource("").getPath();
+
+    /**
+     * linux中储存文件的路径
+     */
+    private static String uploadFilePath = "/usr/local/blog-website/file/";
+
+
+
 
     /**
      * 判断是否是邮箱
@@ -140,7 +154,7 @@ public class TaleUtils {
     private static Properties getPropFromFile(String fileName) {
         Properties properties = new Properties();
         try {
-//            默认是classPath路径
+            // 默认是classPath路径
             InputStream resourceAsStream = new FileInputStream(fileName);
             properties.load(resourceAsStream);
         } catch (TipException | IOException e) {
@@ -185,17 +199,16 @@ public class TaleUtils {
         if (newDataSource == null) {
             synchronized (TaleUtils.class) {
                 if (newDataSource == null) {
-                    Properties properties = TaleUtils.getPropFromFile("application-jdbc.properties");
-                    if (properties.size() == 0) {
-                        return newDataSource;
-                    }
                     DriverManagerDataSource managerDataSource = new DriverManagerDataSource();
                     //        TODO 对不同数据库支持
-                    managerDataSource.setDriverClassName("com.mysql.jdbc.Driver");
-                    String str =  properties.getProperty("spring.datasource.url");
-                    managerDataSource.setUsername(properties.getProperty("spring.datasource.username"));
-                    managerDataSource.setPassword(properties.getProperty("spring.datasource.password"));
-                    managerDataSource.setUrl(str);
+                    String driver = "com.mysql.jdbc.Driver";
+                    String url = "jdbc:mysql://localhost:3306/blog?useSSL=false&useUnicode=true&characterEncoding=utf-8&zeroDateTimeBehavior=convertToNull&autoReconnect=true";
+                    String username = "root";
+                    String password = "3333";
+                    managerDataSource.setDriverClassName(driver);
+                    managerDataSource.setUrl(url);
+                    managerDataSource.setUsername(username);
+                    managerDataSource.setPassword(password);
                     newDataSource = managerDataSource;
                 }
             }
@@ -487,9 +500,22 @@ public class TaleUtils {
      * @return
      */
     public static String getUploadFilePath() {
+        // 开发环境是windows,所以使用不同的路径.若实际部署可删除这个if
         if ((System.getProperty("os.name").startsWith("Windows"))){
             return new File("").getAbsolutePath()+"\\";
         }
-        return "/usr/local/blog-website/file/";
+        return TaleUtils.uploadFilePath;
+    }
+
+
+    /**
+     * 根据操作系统返回不同的根路径
+     * @return
+     */
+    public static String getRootByOS(){
+        if ((System.getProperty("os.name").startsWith("Windows"))){
+            return "\\";
+        }
+        return "/";
     }
 }

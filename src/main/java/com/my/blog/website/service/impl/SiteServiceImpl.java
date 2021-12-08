@@ -1,30 +1,31 @@
 package com.my.blog.website.service.impl;
 
 import com.github.pagehelper.PageHelper;
+import com.my.blog.website.constant.WebConst;
+import com.my.blog.website.controller.admin.AttachController;
 import com.my.blog.website.dao.AttachVoMapper;
+import com.my.blog.website.dao.CommentVoMapper;
+import com.my.blog.website.dao.ContentVoMapper;
+import com.my.blog.website.dao.MetaVoMapper;
 import com.my.blog.website.dto.MetaDto;
+import com.my.blog.website.dto.Types;
 import com.my.blog.website.exception.TipException;
 import com.my.blog.website.modal.Bo.ArchiveBo;
+import com.my.blog.website.modal.Bo.BackResponseBo;
+import com.my.blog.website.modal.Bo.StatisticsBo;
 import com.my.blog.website.modal.Vo.*;
 import com.my.blog.website.service.ISiteService;
 import com.my.blog.website.utils.DateKit;
 import com.my.blog.website.utils.TaleUtils;
-import com.my.blog.website.utils.backup.Backup;
-import com.my.blog.website.constant.WebConst;
-import com.my.blog.website.controller.admin.AttachController;
-import com.my.blog.website.dao.CommentVoMapper;
-import com.my.blog.website.dao.ContentVoMapper;
-import com.my.blog.website.dao.MetaVoMapper;
-import com.my.blog.website.dto.Types;
-import com.my.blog.website.modal.Bo.BackResponseBo;
-import com.my.blog.website.modal.Bo.StatisticsBo;
 import com.my.blog.website.utils.ZipUtils;
+import com.my.blog.website.utils.backup.Backup;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
+import javax.sql.DataSource;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -50,6 +51,9 @@ public class SiteServiceImpl implements ISiteService {
 
     @Resource
     private MetaVoMapper metaDao;
+
+    @Resource
+    private  DataSource dataSource;
 
     @Override
     public List<CommentVo> recentComments(int limit) {
@@ -83,20 +87,23 @@ public class SiteServiceImpl implements ISiteService {
     @Override
     public BackResponseBo backup(String bk_type, String bk_path, String fmt) throws Exception {
         BackResponseBo backResponse = new BackResponseBo();
-        if (bk_type.equals("attach")) {
+        if ("attach".equals(bk_type)) {
             if (StringUtils.isBlank(bk_path)) {
                 throw new TipException("请输入备份文件存储路径");
             }
             if (!(new File(bk_path)).isDirectory()) {
                 throw new TipException("请输入一个存在的目录");
             }
+
+            //完整的保存路径
             String bkAttachDir = AttachController.CLASSPATH + "upload";
-            String bkThemesDir = AttachController.CLASSPATH + "templates/themes";
+            String bkThemesDir = AttachController.CLASSPATH + "templates"+ TaleUtils.getRootByOS() +"themes";
 
             String fname = DateKit.dateFormat(new Date(), fmt) + "_" + TaleUtils.getRandomNumber(5) + ".zip";
 
-            String attachPath = bk_path + "/" + "attachs_" + fname;
-            String themesPath = bk_path + "/" + "themes_" + fname;
+            //完整的目标保存路径
+            String attachPath = bk_path + TaleUtils.getRootByOS() + "attaches_" + fname;
+            String themesPath = bk_path + TaleUtils.getRootByOS() + "themes_" + fname;
 
             ZipUtils.zipFolder(bkAttachDir, attachPath);
             ZipUtils.zipFolder(bkThemesDir, themesPath);
@@ -104,7 +111,7 @@ public class SiteServiceImpl implements ISiteService {
             backResponse.setAttachPath(attachPath);
             backResponse.setThemePath(themesPath);
         }
-        if (bk_type.equals("db")) {
+        if ("db".equals(bk_type)) {
 
             String bkAttachDir = AttachController.CLASSPATH + "upload/";
             if (!(new File(bkAttachDir)).isDirectory()) {
@@ -116,7 +123,7 @@ public class SiteServiceImpl implements ISiteService {
             String sqlFileName = "tale_" + DateKit.dateFormat(new Date(), fmt) + "_" + TaleUtils.getRandomNumber(5) + ".sql";
             String zipFile = sqlFileName.replace(".sql", ".zip");
 
-            Backup backup = new Backup(TaleUtils.getNewDataSource().getConnection());
+            Backup backup = new Backup(dataSource.getConnection());
             String sqlContent = backup.execute();
 
             File sqlFile = new File(bkAttachDir + sqlFileName);
@@ -131,14 +138,6 @@ public class SiteServiceImpl implements ISiteService {
             sqlFile.delete();
 
             backResponse.setSqlPath(zipFile);
-
-            // 10秒后删除备份文件
-            new Timer().schedule(new TimerTask() {
-                @Override
-                public void run() {
-                    new File(zip).delete();
-                }
-            }, 10 * 1000);
         }
         return backResponse;
     }
