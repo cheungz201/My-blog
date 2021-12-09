@@ -5,10 +5,10 @@ fork from [My Blog](https://github.com/ZHENFENG13/My-Blog) , 该作者是在 [Ta
 `Tale` 使用了轻量级 mvc 框架 `Blade` 开发，默认主题使用了漂亮的 `pinghsu` 。
 
 `My-Blog` 使用的是 Docker + SpringBoot + Mybatis + thymeleaf 打造的一个个人博客模板。
-
+如需使用docker部署请自行修改Dockerfile文件。
 ## 开源协议
 
-[MIT](./LICENSE)
+[Apache2.0](https://www.apache.org/licenses/LICENSE-2.0)
 
 ## 感谢
 

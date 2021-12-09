@@ -244,6 +244,7 @@ public class TaleUtils {
                     String uid = Tools.deAes(cookie.getValue(), WebConst.AES_SALT);
                     return StringUtils.isNotBlank(uid) && Tools.isNumber(uid) ? Integer.valueOf(uid) : null;
                 } catch (Exception e) {
+                    LOGGER.error(e.getMessage());
                 }
             }
         }
