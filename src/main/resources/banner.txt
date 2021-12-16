@@ -1,5 +1,3 @@
-${AnsiColor.BRIGHT_GREEN}
-
 bbbbbbbb
 b::::::b            lllllll
 b::::::b            l:::::l
@@ -24,6 +22,6 @@ bbbbbbbbbbbbbbbb   llllllll   ooooooooooo       gggggggg::::::g
                                             gg:::::::::::::g
                                               ggg::::::ggg
                                                  gggggg
-${AnsiColor.MAGENTA}
+
 Application Version: ${application.version}${application.formatted-version}
 Spring Boot Version: ${spring-boot.version}${spring-boot.formatted-version}
