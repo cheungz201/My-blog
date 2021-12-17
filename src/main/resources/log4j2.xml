@@ -6,7 +6,6 @@
 
     <!-- 常量引用 -->
     <properties>
-        <!--<property name="LOG_HOME">/opt/logs/api-logs/</property>-->
         <property name="LOG_HOME">/usr/local/blog-website/log</property>
         <property name="FORMAT">%d{yyyy-MM-dd HH:mm:ss.SSS} [%t] %-5level %logger{36} - %msg%n</property>
     </properties>
@@ -15,20 +14,36 @@
     <appenders>
         <!-- 常见的输出到console,常用于开发环境中,默认是system_err,还有一个system_out -->
         <console name="console" target="system_out">
-            <!-- appender级别的日志过滤 -->
             <!-- <thresholdFilter level="info" onMatch="accept" onMismatch="deny"/> -->
             <patternLayout pattern="${FORMAT}"/>
         </console>
-        <!-- 常用于开发环境,把日志记录到文件中,默认追加 -->
-        <file name="db_log" fileName="${LOG_HOME}/my-blog-db.log" append="true">
-            <patternLayout pattern="${FORMAT}"/>
-        </file>
-        <file name="service_log" fileName="${LOG_HOME}/my-blog-info.log" append="true">
-            <patternLayout pattern="${FORMAT}"/>
-        </file>
-        <file name="other_log" fileName="${LOG_HOME}/my-blog-other.log" append="true">
-            <patternLayout pattern="${FORMAT}"/>
-        </file>
+
+        <!-- 输出到文件中 采用这个可以将日志写到多个文件中，可以自定义日志分包、日志文件数量控制等。因此建议使用这个 -->
+        <RollingRandomAccessFile name="db_log"
+                                 filename="${LOG_HOME}/my-blog-db.log"
+                                 filePattern="${LOG_HOME}/$${date:yyyy-MM}/%d{dd}-db-%i.log"
+                                 immediateFlush="true">
+            <PatternLayout pattern="${FORMAT}" charset="UTF-8" />
+            <Policies>
+                <SizeBasedTriggeringPolicy size="50 MB" />
+            </Policies>
+            <!-- 控制文件数量，根据日志名称的i值，最大到10，之后就进行覆盖，默认情况下是7 -->
+            <DefaultRolloverStrategy max="10" />
+
+        </RollingRandomAccessFile>
+
+        <!-- 输出到文件中 采用这个可以将日志写到多个文件中，可以自定义日志分包、日志文件数量控制等。因此建议使用这个 -->
+        <RollingRandomAccessFile name="service_log"
+                                 filename="${LOG_HOME}/my-blog-service.log"
+                                 filePattern="${LOG_HOME}/$${date:yyyy-MM}/%d{dd}-service-%i.log"
+                                 immediateFlush="true">
+            <PatternLayout pattern="${FORMAT}" charset="UTF-8" />
+            <Policies>
+                <SizeBasedTriggeringPolicy size="50 MB" />
+            </Policies>
+            <!-- 控制文件数量，根据日志名称的i值，最大到10，之后就进行覆盖，默认情况下是7 -->
+            <DefaultRolloverStrategy max="10" />
+        </RollingRandomAccessFile>
     </appenders>
 
     <!-- 接收appender -->
