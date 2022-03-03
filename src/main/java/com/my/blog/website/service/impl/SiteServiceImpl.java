@@ -115,7 +115,7 @@ public class SiteServiceImpl implements ISiteService {
         }
         if ("db".equals(bk_type)) {
 
-            String bkAttachDir = AttachController.CLASSPATH + "upload/";
+            String bkAttachDir = AttachController.CLASSPATH + "back/";
             if (!(new File(bkAttachDir)).isDirectory()) {
                 File file = new File(bkAttachDir);
                 if (!file.exists()) {
