@@ -5,9 +5,11 @@ import com.my.blog.website.modal.Vo.UserVo;
 import com.my.blog.website.service.IUserService;
 import com.my.blog.website.service.IOptionService;
 import org.junit.Ignore;
+import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mybatis.spring.annotation.MapperScan;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -29,8 +31,11 @@ public class TranscationTest {
     @Resource
     private IOptionService optionService;
 
-    @org.junit.Test
-    @Ignore
+    @Resource
+    RedisTemplate<String,String> redisTemplate;
+
+    //@org.junit.Test
+    //@Ignore
     public void test() {
         UserVo user = new UserVo();
         user.setUsername("wangqiang111");
@@ -38,5 +43,11 @@ public class TranscationTest {
         user.setEmail("8888");
         userService.insertUser(user);
         optionService.insertOption("site_keywords", "qwqwq");
+    }
+
+    @Test
+    public void redisTest(){
+        redisTemplate.opsForValue().set("cheungz","test");
+        System.out.println(redisTemplate.opsForValue().get("cheungz"));
     }
 }

@@ -68,10 +68,10 @@
         <logger name="com.my.blog.website.dao" level="DEBUG" additivity="true">
             <appender-ref ref="db_log"/>
         </logger>
-        <logger name="com.my.blog.website.controller" level="DEBUG" additivity="false">
+        <logger name="com.my.blog.website.controller" level="DEBUG" additivity="true">
             <appender-ref ref="service_log"/>
         </logger>
-        <logger name="com.my.blog.website.service" level="DEBUG" additivity="false">
+        <logger name="com.my.blog.website.service" level="DEBUG" additivity="true">
             <appender-ref ref="service_log"/>
         </logger>
         <logger name="com.my.blog.website.interceptor.BaseInterceptor" level="DEBUG" additivity="true">

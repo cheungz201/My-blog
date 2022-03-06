@@ -39,11 +39,20 @@ import java.util.List;
 
 /**
  * 首页
- * Created by Administrator on 2021/3/8 008.
+ *
+ * @date 2021/3/8 008
  */
 @Controller
 public class IndexController extends BaseController {
+
+    /**
+     * 表示文章是一个草稿，不返回
+     */
+    public static final String DRAFT = "draft";
+
     private static final Logger LOGGER = LoggerFactory.getLogger(IndexController.class);
+
+
 
     @Resource
     private IContentService contentService;
@@ -62,7 +71,6 @@ public class IndexController extends BaseController {
      *
      * @return
      */
-
     @GetMapping(value = {"/", "index"} )
     public void baseIndex(HttpServletRequest request,HttpServletResponse response) throws IOException {
         response.sendRedirect(request.getContextPath()+"/home/index.html");
@@ -107,7 +115,7 @@ public class IndexController extends BaseController {
     @GetMapping(value = {"article/{cid}", "article/{cid}.html"})
     public String getArticle(HttpServletRequest request, @PathVariable String cid) {
         ContentVo contents = contentService.getContents(cid);
-        if (null == contents || "draft".equals(contents.getStatus())) {
+        if (null == contents || DRAFT.equals(contents.getStatus())) {
             return this.render_404();
         }
         request.setAttribute("article", contents);

@@ -12,16 +12,20 @@ import com.my.blog.website.service.IContentService;
 import com.my.blog.website.service.IMetaService;
 import com.my.blog.website.service.IRelationshipService;
 import com.my.blog.website.utils.DateKit;
+import com.my.blog.website.utils.JsonUtil;
 import com.my.blog.website.utils.TaleUtils;
 import com.my.blog.website.utils.Tools;
 import com.vdurmont.emoji.EmojiParser;
 import com.my.blog.website.dao.ContentVoMapper;
+import org.apache.commons.lang3.Conversion;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
+import java.io.IOException;
 import java.util.List;
 
 /**
@@ -42,6 +46,9 @@ public class ContentServiceImpl implements IContentService {
 
     @Resource
     private IMetaService metasService;
+
+    @Resource
+    private RedisTemplate<String,String> redisTemplate;
 
     @Override
     public void publish(ContentVo contents) {
@@ -69,11 +76,11 @@ public class ContentServiceImpl implements IContentService {
             if (contents.getSlug().length() < 5) {
                 throw new TipException("路径太短了");
             }
-            if (!TaleUtils.isPath(contents.getSlug())) throw new TipException("您输入的路径不合法");
+            if (!TaleUtils.isPath(contents.getSlug())) {throw new TipException("您输入的路径不合法");}
             ContentVoExample contentVoExample = new ContentVoExample();
             contentVoExample.createCriteria().andTypeEqualTo(contents.getType()).andStatusEqualTo(contents.getSlug());
             long count = contentDao.countByExample(contentVoExample);
-            if (count > 0) throw new TipException("该路径已经存在，请重新输入");
+            if (count > 0) {throw new TipException("该路径已经存在，请重新输入");}
         } else {
             contents.setSlug(null);
         }
@@ -110,22 +117,35 @@ public class ContentServiceImpl implements IContentService {
 
     @Override
     public ContentVo getContents(String id) {
+        ContentVo contentVo;
         if (StringUtils.isNotBlank(id)) {
-            if (Tools.isNumber(id)) {
-                ContentVo contentVo = contentDao.selectByPrimaryKey(Integer.valueOf(id));
-                if (contentVo != null) {
-                    contentVo.setHits(contentVo.getHits() + 1);
-                    contentDao.updateByPrimaryKey(contentVo);
+            try{
+                String content = redisTemplate.opsForValue().get(id);
+                if (StringUtils.isNotBlank(content)){
+                    if ( (contentVo = (JsonUtil.string2Obj(content,ContentVo.class))) != null ){
+                        return contentVo;
+                    }
+                }else {
+                    if (Tools.isNumber(id)) {
+                        contentVo = contentDao.selectByPrimaryKey(Integer.valueOf(id));
+                        boolean success = updateHits(contentVo);
+                        if ( !success ){ LOGGER.error("article reading data update failed"); }
+                        // 将文章缓存至redis
+                        contentCache(id,JsonUtil.obj2String(contentVo));
+                        return contentVo;
+                    } else {
+                        ContentVoExample contentVoExample = new ContentVoExample();
+                        contentVoExample.createCriteria().andSlugEqualTo(id);
+                        List<ContentVo> contentVos = contentDao.selectByExampleWithBLOBs(contentVoExample);
+                        contentCache(id,JsonUtil.obj2String(contentVos.get(0)));
+                        if (contentVos.size() != 1) {
+                            throw new TipException("query content by id and return is not one");
+                        }
+                        return contentVos.get(0);
+                    }
                 }
-                return contentVo;
-            } else {
-                ContentVoExample contentVoExample = new ContentVoExample();
-                contentVoExample.createCriteria().andSlugEqualTo(id);
-                List<ContentVo> contentVos = contentDao.selectByExampleWithBLOBs(contentVoExample);
-                if (contentVos.size() != 1) {
-                    throw new TipException("query content by id and return is not one");
-                }
-                return contentVos.get(0);
+            }catch (IOException e) {
+                e.printStackTrace();
             }
         }
         return null;
@@ -218,5 +238,29 @@ public class ContentServiceImpl implements IContentService {
         relationshipService.deleteById(cid, null);
         metasService.saveMetas(cid, contents.getTags(), Types.TAG.getType());
         metasService.saveMetas(cid, contents.getCategories(), Types.CATEGORY.getType());
+    }
+
+    private boolean updateHits(ContentVo contentVo){
+        if (contentVo != null) {
+            contentVo.setHits(contentVo.getHits() + 1);
+            int i = contentDao.updateByPrimaryKey(contentVo);
+            if (i == 1){
+               return true;
+            }
+        }
+        return false;
+    }
+
+
+    private void contentCache(String key,String value) {
+        String cache;
+        cache = redisTemplate.opsForValue().get(key);
+        if ( StringUtils.isBlank(cache)){
+            synchronized (this){
+                if (StringUtils.isBlank(redisTemplate.opsForValue().get(key))){
+                    redisTemplate.opsForValue().set(key,value);
+                }
+            }
+        }
     }
 }
