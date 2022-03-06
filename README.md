@@ -4,8 +4,9 @@ fork from [My Blog](https://github.com/ZHENFENG13/My-Blog) , 该作者是在 [Ta
 
 `Tale` 使用了轻量级 mvc 框架 `Blade` 开发，默认主题使用了漂亮的 `pinghsu` 。
 
-`My-Blog` 使用的是 Docker + SpringBoot + Mybatis + thymeleaf 打造的一个个人博客模板。
+`My-Blog` 使用的是 Docker + SpringBoot + Mybatis + thymeleaf + redis 打造的一个个人博客模板。
 如需使用docker部署请自行修改Dockerfile文件。
+
 ## 开源协议
 
 [Apache2.0](https://www.apache.org/licenses/LICENSE-2.0)
@@ -14,3 +15,6 @@ fork from [My Blog](https://github.com/ZHENFENG13/My-Blog) , 该作者是在 [Ta
 
 [ZHENFENG13](https://github.com/ZHENFENG13)
 [otale](https://github.com/otale)
+
+#警告
+本项目使用免费的bootstrapCDN源，最近发现cdn源已经失效，源码尚未修改，如有需求请自行修改。
