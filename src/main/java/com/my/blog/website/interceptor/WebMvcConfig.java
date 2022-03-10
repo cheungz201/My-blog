@@ -2,9 +2,9 @@ package com.my.blog.website.interceptor;
 
 
 import com.my.blog.website.utils.TaleUtils;
+import org.springframework.context.annotation.Configuration;
 import org.springframework.format.FormatterRegistry;
 import org.springframework.http.converter.HttpMessageConverter;
-import org.springframework.stereotype.Component;
 import org.springframework.validation.MessageCodesResolver;
 import org.springframework.validation.Validator;
 import org.springframework.web.method.support.HandlerMethodArgumentResolver;
@@ -21,13 +21,13 @@ import java.util.List;
  * @author Zhang Zhe
  * @date 2021/5/29
  */
-@Component
+@Configuration
 public class WebMvcConfig implements WebMvcConfigurer {
+
     @Resource
     private BaseInterceptor baseInterceptor;
 
     /**
-     * @Author:  Zhang Zhe
      * @Time:  2021/5/29 10:01
      * @Params:
      * @Return: NULL
@@ -51,6 +51,7 @@ public class WebMvcConfig implements WebMvcConfigurer {
                 .addResourceLocations("file:" + TaleUtils.getUploadFilePath() + "upload/");
 
     }
+
 
     @Override
     public void configurePathMatch(PathMatchConfigurer pathMatchConfigurer) {}

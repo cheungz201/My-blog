@@ -240,6 +240,11 @@ public class ContentServiceImpl implements IContentService {
         metasService.saveMetas(cid, contents.getCategories(), Types.CATEGORY.getType());
     }
 
+    /**
+     * 更新点击数
+     * @param contentVo
+     * @return
+     */
     private boolean updateHits(ContentVo contentVo){
         if (contentVo != null) {
             contentVo.setHits(contentVo.getHits() + 1);
@@ -252,15 +257,22 @@ public class ContentServiceImpl implements IContentService {
     }
 
 
+    /**
+     * 缓存文章
+     * @param key id
+     * @param value contentVo
+     */
     private void contentCache(String key,String value) {
         String cache;
         cache = redisTemplate.opsForValue().get(key);
         if ( StringUtils.isBlank(cache)){
-            synchronized (this){
+            synchronized ( this ){
                 if (StringUtils.isBlank(redisTemplate.opsForValue().get(key))){
                     redisTemplate.opsForValue().set(key,value);
                 }
             }
         }
     }
+
+
 }

@@ -1,8 +1,8 @@
 package com.my.blog.website.utils;
 
-import com.my.blog.website.exception.TipException;
 import com.my.blog.website.constant.WebConst;
 import com.my.blog.website.controller.admin.AttachController;
+import com.my.blog.website.exception.TipException;
 import com.my.blog.website.modal.Vo.UserVo;
 import org.apache.commons.lang3.StringUtils;
 import org.commonmark.node.Node;
@@ -11,7 +11,6 @@ import org.commonmark.renderer.html.HtmlRenderer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.jdbc.datasource.DriverManagerDataSource;
-
 import javax.imageio.ImageIO;
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
@@ -22,7 +21,6 @@ import java.awt.*;
 import java.io.*;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
-import java.text.Normalizer;
 import java.util.Date;
 import java.util.Properties;
 import java.util.regex.Matcher;
@@ -371,54 +369,159 @@ public class TaleUtils {
      * @param value
      * @return
      */
-    public static String filterXSS(String value) {
-        String cleanValue = null;
+    public static String xssUtil(String value) {
         if (value != null) {
-            cleanValue = Normalizer.normalize(value, Normalizer.Form.NFD);
-            // Avoid null characters
-            cleanValue = cleanValue.replaceAll("\0", "");
-
-            // Avoid anything between script tags
-            Pattern scriptPattern = Pattern.compile("<script>(.*?)</script>", Pattern.CASE_INSENSITIVE);
-            cleanValue = scriptPattern.matcher(cleanValue).replaceAll("");
-
-            // Avoid anything in a src='...' type of expression
-            scriptPattern = Pattern.compile("src[\r\n]*=[\r\n]*\\\'(.*?)\\\'", Pattern.CASE_INSENSITIVE | Pattern.MULTILINE | Pattern.DOTALL);
-            cleanValue = scriptPattern.matcher(cleanValue).replaceAll("");
-
-            scriptPattern = Pattern.compile("src[\r\n]*=[\r\n]*\\\"(.*?)\\\"", Pattern.CASE_INSENSITIVE | Pattern.MULTILINE | Pattern.DOTALL);
-            cleanValue = scriptPattern.matcher(cleanValue).replaceAll("");
-
-            // Remove any lonesome </script> tag
-            scriptPattern = Pattern.compile("</script>", Pattern.CASE_INSENSITIVE);
-            cleanValue = scriptPattern.matcher(cleanValue).replaceAll("");
-
-            // Remove any lonesome <script ...> tag
-            scriptPattern = Pattern.compile("<script(.*?)>", Pattern.CASE_INSENSITIVE | Pattern.MULTILINE | Pattern.DOTALL);
-            cleanValue = scriptPattern.matcher(cleanValue).replaceAll("");
-
-            // Avoid eval(...) expressions
-            scriptPattern = Pattern.compile("eval\\((.*?)\\)", Pattern.CASE_INSENSITIVE | Pattern.MULTILINE | Pattern.DOTALL);
-            cleanValue = scriptPattern.matcher(cleanValue).replaceAll("");
-
-            // Avoid expression(...) expressions
-            scriptPattern = Pattern.compile("expression\\((.*?)\\)", Pattern.CASE_INSENSITIVE | Pattern.MULTILINE | Pattern.DOTALL);
-            cleanValue = scriptPattern.matcher(cleanValue).replaceAll("");
-
-            // Avoid javascript:... expressions
-            scriptPattern = Pattern.compile("javascript:", Pattern.CASE_INSENSITIVE);
-            cleanValue = scriptPattern.matcher(cleanValue).replaceAll("");
-
-            // Avoid vbscript:... expressions
-            scriptPattern = Pattern.compile("vbscript:", Pattern.CASE_INSENSITIVE);
-            cleanValue = scriptPattern.matcher(cleanValue).replaceAll("");
-
-            // Avoid onload= expressions
-            scriptPattern = Pattern.compile("onload(.*?)=", Pattern.CASE_INSENSITIVE | Pattern.MULTILINE | Pattern.DOTALL);
-            cleanValue = scriptPattern.matcher(cleanValue).replaceAll("");
+            //删除script标签
+            Pattern compile = Pattern.compile("<script>(.*?)</script>", Pattern.CASE_INSENSITIVE);
+            value = compile.matcher(value).replaceAll("");
+            compile = Pattern.compile("src[\r\n]*=[\r\n]*\\\'(.*?)\\\'", Pattern.CASE_INSENSITIVE | Pattern.MULTILINE | Pattern.DOTALL);
+            value = compile.matcher(value).replaceAll("");
+            compile = Pattern.compile("src[\r\n]*=[\r\n]*\\\"(.*?)\\\"", Pattern.CASE_INSENSITIVE | Pattern.MULTILINE | Pattern.DOTALL);
+            value = compile.matcher(value).replaceAll("");
+            // 删除单个的 </script> 标签
+            compile = Pattern.compile("</script>", Pattern.CASE_INSENSITIVE);
+            value = compile.matcher(value).replaceAll("");
+            // 删除单个的<script ...> 标签
+            compile = Pattern.compile("<script(.*?)>", Pattern.CASE_INSENSITIVE | Pattern.MULTILINE | Pattern.DOTALL);
+            value = compile.matcher(value).replaceAll("");
+            // 避免 eval(...) 形式表达式
+            compile = Pattern.compile("eval\\((.*?)\\)", Pattern.CASE_INSENSITIVE | Pattern.MULTILINE | Pattern.DOTALL);
+            value = compile.matcher(value).replaceAll("");
+            // 避免 e­xpression(...) 表达式
+            compile = Pattern.compile("e­xpression\\((.*?)\\)", Pattern.CASE_INSENSITIVE | Pattern.MULTILINE | Pattern.DOTALL);
+            value = compile.matcher(value).replaceAll("");
+            // 避免 javascript: 表达式
+            compile = Pattern.compile("javascript:", Pattern.CASE_INSENSITIVE);
+            value = compile.matcher(value).replaceAll("");
+            // 避免 vbscript:表达式
+            compile = Pattern.compile("vbscript:", Pattern.CASE_INSENSITIVE);
+            value = compile.matcher(value).replaceAll("");
+            value = cleanEventAttact(value);
+            //替换特殊标签
+            value = value
+                    .replaceAll("<", "&lt;")
+                    .replaceAll(">", "&gt;")
+                    .replaceAll("'","\\'")
+                    .replaceAll("\"","\"")
+                    .replaceAll("'","|")
+                    .replaceAll("\\\\","~")
+                    .replaceAll("\\|","\\|")
+                    .replaceAll(";","\\;");
         }
-        return cleanValue;
+        return value;
     }
+
+    /**
+     * 屏蔽页面注入的所有html事件攻击
+     *
+     * @param value
+     * @return
+     */
+    public static String cleanEventAttact(String value) {
+        //避免οnclick= 表达式
+        Pattern compile = Pattern.compile("onafterprint(.*?)=", Pattern.CASE_INSENSITIVE | Pattern.MULTILINE | Pattern.DOTALL);
+        value = compile.matcher(value).replaceAll("");
+        compile = Pattern.compile("onbeforeprint(.*?)=", Pattern.CASE_INSENSITIVE | Pattern.MULTILINE | Pattern.DOTALL);
+        value = compile.matcher(value).replaceAll("");
+        compile = Pattern.compile("onbeforeunload(.*?)=", Pattern.CASE_INSENSITIVE | Pattern.MULTILINE | Pattern.DOTALL);
+        value = compile.matcher(value).replaceAll("");
+        compile = Pattern.compile("onerror(.*?)=", Pattern.CASE_INSENSITIVE | Pattern.MULTILINE | Pattern.DOTALL);
+        value = compile.matcher(value).replaceAll("");
+        compile = Pattern.compile("onhaschange(.*?)=", Pattern.CASE_INSENSITIVE | Pattern.MULTILINE | Pattern.DOTALL);
+        value = compile.matcher(value).replaceAll("");
+        compile = Pattern.compile("onload(.*?)=", Pattern.CASE_INSENSITIVE | Pattern.MULTILINE | Pattern.DOTALL);
+        value = compile.matcher(value).replaceAll("");
+        compile = Pattern.compile("onmessage(.*?)=", Pattern.CASE_INSENSITIVE | Pattern.MULTILINE | Pattern.DOTALL);
+        value = compile.matcher(value).replaceAll("");
+        compile = Pattern.compile("onoffline(.*?)=", Pattern.CASE_INSENSITIVE | Pattern.MULTILINE | Pattern.DOTALL);
+        value = compile.matcher(value).replaceAll("");
+        compile = Pattern.compile("ononline(.*?)=", Pattern.CASE_INSENSITIVE | Pattern.MULTILINE | Pattern.DOTALL);
+        value = compile.matcher(value).replaceAll("");
+        compile = Pattern.compile("onpagehide(.*?)=", Pattern.CASE_INSENSITIVE | Pattern.MULTILINE | Pattern.DOTALL);
+        value = compile.matcher(value).replaceAll("");
+        compile = Pattern.compile("onpageshow(.*?)=", Pattern.CASE_INSENSITIVE | Pattern.MULTILINE | Pattern.DOTALL);
+        value = compile.matcher(value).replaceAll("");
+        compile = Pattern.compile("onpopstate(.*?)=", Pattern.CASE_INSENSITIVE | Pattern.MULTILINE | Pattern.DOTALL);
+        value = compile.matcher(value).replaceAll("");
+        compile = Pattern.compile("onredo(.*?)=", Pattern.CASE_INSENSITIVE | Pattern.MULTILINE | Pattern.DOTALL);
+        value = compile.matcher(value).replaceAll("");
+        compile = Pattern.compile("onresize(.*?)=", Pattern.CASE_INSENSITIVE | Pattern.MULTILINE | Pattern.DOTALL);
+        value = compile.matcher(value).replaceAll("");
+        compile = Pattern.compile("onstorage(.*?)=", Pattern.CASE_INSENSITIVE | Pattern.MULTILINE | Pattern.DOTALL);
+        value = compile.matcher(value).replaceAll("");
+        compile = Pattern.compile("onundo(.*?)=", Pattern.CASE_INSENSITIVE | Pattern.MULTILINE | Pattern.DOTALL);
+        value = compile.matcher(value).replaceAll("");
+        compile = Pattern.compile("onunload(.*?)=", Pattern.CASE_INSENSITIVE | Pattern.MULTILINE | Pattern.DOTALL);
+        value = compile.matcher(value).replaceAll("");
+        compile = Pattern.compile("onblur(.*?)=", Pattern.CASE_INSENSITIVE | Pattern.MULTILINE | Pattern.DOTALL);
+        value = compile.matcher(value).replaceAll("");
+        compile = Pattern.compile("onchange(.*?)=", Pattern.CASE_INSENSITIVE | Pattern.MULTILINE | Pattern.DOTALL);
+        value = compile.matcher(value).replaceAll("");
+        compile = Pattern.compile("oncontextmenu(.*?)=", Pattern.CASE_INSENSITIVE | Pattern.MULTILINE | Pattern.DOTALL);
+        value = compile.matcher(value).replaceAll("");
+        compile = Pattern.compile("onfocus(.*?)=", Pattern.CASE_INSENSITIVE | Pattern.MULTILINE | Pattern.DOTALL);
+        value = compile.matcher(value).replaceAll("");
+        compile = Pattern.compile("onformchange(.*?)=", Pattern.CASE_INSENSITIVE | Pattern.MULTILINE | Pattern.DOTALL);
+        value = compile.matcher(value).replaceAll("");
+        compile = Pattern.compile("onforminput(.*?)=", Pattern.CASE_INSENSITIVE | Pattern.MULTILINE | Pattern.DOTALL);
+        value = compile.matcher(value).replaceAll("");
+        compile = Pattern.compile("oninput(.*?)=", Pattern.CASE_INSENSITIVE | Pattern.MULTILINE | Pattern.DOTALL);
+        value = compile.matcher(value).replaceAll("");
+        compile = Pattern.compile("oninvalid(.*?)=", Pattern.CASE_INSENSITIVE | Pattern.MULTILINE | Pattern.DOTALL);
+        value = compile.matcher(value).replaceAll("");
+        compile = Pattern.compile("onreset(.*?)=", Pattern.CASE_INSENSITIVE | Pattern.MULTILINE | Pattern.DOTALL);
+        value = compile.matcher(value).replaceAll("");
+        compile = Pattern.compile("onselect(.*?)=", Pattern.CASE_INSENSITIVE | Pattern.MULTILINE | Pattern.DOTALL);
+        value = compile.matcher(value).replaceAll("");
+        compile = Pattern.compile("onsubmit(.*?)=", Pattern.CASE_INSENSITIVE | Pattern.MULTILINE | Pattern.DOTALL);
+        value = compile.matcher(value).replaceAll("");
+        compile = Pattern.compile("onkeydown(.*?)=", Pattern.CASE_INSENSITIVE | Pattern.MULTILINE | Pattern.DOTALL);
+        value = compile.matcher(value).replaceAll("");
+        compile = Pattern.compile("onkeypress(.*?)=", Pattern.CASE_INSENSITIVE | Pattern.MULTILINE | Pattern.DOTALL);
+        value = compile.matcher(value).replaceAll("");
+        compile = Pattern.compile("onkeyup(.*?)=", Pattern.CASE_INSENSITIVE | Pattern.MULTILINE | Pattern.DOTALL);
+        value = compile.matcher(value).replaceAll("");
+        compile = Pattern.compile("onclick(.*?)=", Pattern.CASE_INSENSITIVE | Pattern.MULTILINE | Pattern.DOTALL);
+        value = compile.matcher(value).replaceAll("");
+        compile = Pattern.compile("ondblclick(.*?)=", Pattern.CASE_INSENSITIVE | Pattern.MULTILINE | Pattern.DOTALL);
+        value = compile.matcher(value).replaceAll("");
+        compile = Pattern.compile("ondrag(.*?)=", Pattern.CASE_INSENSITIVE | Pattern.MULTILINE | Pattern.DOTALL);
+        value = compile.matcher(value).replaceAll("");
+        compile = Pattern.compile("ondragend(.*?)=", Pattern.CASE_INSENSITIVE | Pattern.MULTILINE | Pattern.DOTALL);
+        value = compile.matcher(value).replaceAll("");
+        compile = Pattern.compile("ondragenter(.*?)=", Pattern.CASE_INSENSITIVE | Pattern.MULTILINE | Pattern.DOTALL);
+        value = compile.matcher(value).replaceAll("");
+        compile = Pattern.compile("ondragleave(.*?)=", Pattern.CASE_INSENSITIVE | Pattern.MULTILINE | Pattern.DOTALL);
+        value = compile.matcher(value).replaceAll("");
+        compile = Pattern.compile("ondragover(.*?)=", Pattern.CASE_INSENSITIVE | Pattern.MULTILINE | Pattern.DOTALL);
+        value = compile.matcher(value).replaceAll("");
+        compile = Pattern.compile("ondragstart(.*?)=", Pattern.CASE_INSENSITIVE | Pattern.MULTILINE | Pattern.DOTALL);
+        value = compile.matcher(value).replaceAll("");
+        compile = Pattern.compile("ondrop(.*?)=", Pattern.CASE_INSENSITIVE | Pattern.MULTILINE | Pattern.DOTALL);
+        value = compile.matcher(value).replaceAll("");
+        compile = Pattern.compile("onmousedown(.*?)=", Pattern.CASE_INSENSITIVE | Pattern.MULTILINE | Pattern.DOTALL);
+        value = compile.matcher(value).replaceAll("");
+        compile = Pattern.compile("onmousemove(.*?)=", Pattern.CASE_INSENSITIVE | Pattern.MULTILINE | Pattern.DOTALL);
+        value = compile.matcher(value).replaceAll("");
+        compile = Pattern.compile("onmouseout(.*?)=", Pattern.CASE_INSENSITIVE | Pattern.MULTILINE | Pattern.DOTALL);
+        value = compile.matcher(value).replaceAll("");
+        compile = Pattern.compile("onmouseover(.*?)=", Pattern.CASE_INSENSITIVE | Pattern.MULTILINE | Pattern.DOTALL);
+        value = compile.matcher(value).replaceAll("");
+        compile = Pattern.compile("onmouseenter(.*?)=", Pattern.CASE_INSENSITIVE | Pattern.MULTILINE | Pattern.DOTALL);
+        value = compile.matcher(value).replaceAll("");
+        compile = Pattern.compile("onmouseup(.*?)=", Pattern.CASE_INSENSITIVE | Pattern.MULTILINE | Pattern.DOTALL);
+        value = compile.matcher(value).replaceAll("");
+        compile = Pattern.compile("onmousewheel(.*?)=", Pattern.CASE_INSENSITIVE | Pattern.MULTILINE | Pattern.DOTALL);
+        value = compile.matcher(value).replaceAll("");
+        compile = Pattern.compile("onscroll(.*?)=", Pattern.CASE_INSENSITIVE | Pattern.MULTILINE | Pattern.DOTALL);
+        value = compile.matcher(value).replaceAll("");
+        // 页面屏蔽document字样
+        value = value.replace("document", "");
+        // 页面屏蔽alert字样
+        value = value.replace("alert", "");
+        return value;
+    }
+
 
     /**
      * 判断是否是合法路径
