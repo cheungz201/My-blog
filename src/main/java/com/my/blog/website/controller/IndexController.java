@@ -1,5 +1,6 @@
 package com.my.blog.website.controller;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.github.pagehelper.PageInfo;
 import com.my.blog.website.constant.WebConst;
 import com.my.blog.website.dto.ErrorCode;
@@ -13,6 +14,7 @@ import com.my.blog.website.modal.Vo.MetaVo;
 import com.my.blog.website.service.IMetaService;
 import com.my.blog.website.service.ISiteService;
 import com.my.blog.website.utils.PatternKit;
+import com.my.blog.website.utils.RedisUtil;
 import com.my.blog.website.utils.TaleUtils;
 import com.vdurmont.emoji.EmojiParser;
 import com.my.blog.website.modal.Bo.CommentBo;
@@ -27,6 +29,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.ModelAndView;
+import xyz.cheungz.httphelper.utils.SerializationUtil;
 
 import javax.annotation.Resource;
 import javax.servlet.http.Cookie;
@@ -65,6 +68,9 @@ public class IndexController extends BaseController {
 
     @Resource
     private ISiteService siteService;
+
+    @Resource
+    private RedisUtil redisUtil;
 
     /**
      * 主页
@@ -316,9 +322,20 @@ public class IndexController extends BaseController {
      */
     @GetMapping(value = "/{pagename}")
     public String page(@PathVariable String pagename, HttpServletRequest request) {
-        ContentVo contents = contentService.getContents(pagename);
-        if (null == contents) {
-            return this.render_404();
+        ContentVo contents = null;
+        try {
+            if (redisUtil.contentIsNull(pagename)) {
+                contents = contentService.getContents(pagename);
+                if (null == contents) {
+                    return this.render_404();
+                }
+                redisUtil.contentCache(pagename, SerializationUtil.obj2String(contents));
+            } else {
+                contents = SerializationUtil.string2Obj(redisUtil.getCache(pagename), ContentVo.class);
+            }
+        } catch (JsonProcessingException e) {
+            e.printStackTrace();
+            return this.render("comm/error_500");
         }
         if (contents.getAllowComment()) {
             String cp = request.getParameter("cp");

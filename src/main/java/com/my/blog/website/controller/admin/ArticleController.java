@@ -14,12 +14,14 @@ import com.my.blog.website.modal.Vo.UserVo;
 import com.my.blog.website.service.IContentService;
 import com.my.blog.website.service.ILogService;
 import com.my.blog.website.service.IMetaService;
+import com.my.blog.website.utils.RedisUtil;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Controller;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
+import xyz.cheungz.httphelper.utils.SerializationUtil;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
@@ -43,6 +45,9 @@ public class ArticleController extends BaseController {
 
     @Resource
     private ILogService logService;
+
+    @Resource
+    private RedisUtil redisUtil;
 
     /**
      * 文章列表
@@ -114,11 +119,7 @@ public class ArticleController extends BaseController {
             contentsService.publish(contents);
         } catch (Exception e) {
             String msg = "文章发布失败";
-            if (e instanceof TipException) {
-                msg = e.getMessage();
-            } else {
-                LOGGER.error(msg, e);
-            }
+            exceptionProcess(e,msg);
             return RestResponseBo.fail(msg);
         }
         return RestResponseBo.ok();
@@ -140,13 +141,10 @@ public class ArticleController extends BaseController {
         contents.setType(Types.ARTICLE.getType());
         try {
             contentsService.updateArticle(contents);
+            redisUtil.updateCache(String.valueOf(contents.getCid()), SerializationUtil.obj2String(contents));
         } catch (Exception e) {
             String msg = "文章编辑失败";
-            if (e instanceof TipException) {
-                msg = e.getMessage();
-            } else {
-                LOGGER.error(msg, e);
-            }
+            msg = exceptionProcess(e,msg);
             return RestResponseBo.fail(msg);
         }
         return RestResponseBo.ok();
@@ -168,13 +166,24 @@ public class ArticleController extends BaseController {
             logService.insertLog(LogActions.DEL_ARTICLE.getAction(), cid + "", request.getRemoteAddr(), this.getUid(request));
         } catch (Exception e) {
             String msg = "文章删除失败";
-            if (e instanceof TipException) {
-                msg = e.getMessage();
-            } else {
-                LOGGER.error(msg, e);
-            }
+            msg = exceptionProcess(e,msg);
             return RestResponseBo.fail(msg);
         }
         return RestResponseBo.ok();
+    }
+
+    /**
+     * 统一异常处理方法
+     * @param e 异常
+     * @param msg 返回信息
+     * @return 异常信息
+     */
+    private String exceptionProcess(Exception e,String msg){
+        if (e instanceof TipException) {
+            msg = e.getMessage();
+        } else {
+            LOGGER.error(msg, e);
+        }
+        return msg;
     }
 }

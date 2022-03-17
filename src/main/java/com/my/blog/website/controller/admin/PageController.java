@@ -12,11 +12,13 @@ import com.my.blog.website.dto.Types;
 import com.my.blog.website.modal.Vo.ContentVo;
 import com.my.blog.website.modal.Vo.ContentVoExample;
 import com.my.blog.website.service.IContentService;
+import com.my.blog.website.utils.RedisUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Controller;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
+import xyz.cheungz.httphelper.utils.SerializationUtil;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
@@ -35,6 +37,9 @@ public class PageController extends BaseController {
 
     @Resource
     private ILogService logService;
+
+    @Resource
+    private RedisUtil redisUtil;
 
     @GetMapping(value = "")
     public String index(HttpServletRequest request) {
@@ -118,7 +123,10 @@ public class PageController extends BaseController {
         }
         contents.setAuthorId(users.getUid());
         try {
-            contentsService.updateArticle(contents);
+            int i = contentsService.updateArticle(contents);
+            if (i == 1){
+                redisUtil.updateCache(String.valueOf(contents.getCid()), SerializationUtil.obj2String(contents));
+            }
         } catch (Exception e) {
             String msg = "页面编辑失败";
             if (e instanceof TipException) {

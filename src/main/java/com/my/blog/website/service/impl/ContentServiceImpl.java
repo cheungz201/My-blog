@@ -11,17 +11,12 @@ import com.my.blog.website.modal.Vo.ContentVoExample;
 import com.my.blog.website.service.IContentService;
 import com.my.blog.website.service.IMetaService;
 import com.my.blog.website.service.IRelationshipService;
-import com.my.blog.website.utils.DateKit;
-import com.my.blog.website.utils.JsonUtil;
-import com.my.blog.website.utils.TaleUtils;
-import com.my.blog.website.utils.Tools;
+import com.my.blog.website.utils.*;
 import com.vdurmont.emoji.EmojiParser;
 import com.my.blog.website.dao.ContentVoMapper;
-import org.apache.commons.lang3.Conversion;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
@@ -48,7 +43,7 @@ public class ContentServiceImpl implements IContentService {
     private IMetaService metasService;
 
     @Resource
-    private RedisTemplate<String,String> redisTemplate;
+    private RedisUtil redisUtil;
 
     @Override
     public void publish(ContentVo contents) {
@@ -120,7 +115,7 @@ public class ContentServiceImpl implements IContentService {
         ContentVo contentVo;
         if (StringUtils.isNotBlank(id)) {
             try{
-                String content = redisTemplate.opsForValue().get(id);
+                String content = redisUtil.getCache(id);
                 if (StringUtils.isNotBlank(content)){
                     if ( (contentVo = (JsonUtil.string2Obj(content,ContentVo.class))) != null ){
                         return contentVo;
@@ -131,13 +126,13 @@ public class ContentServiceImpl implements IContentService {
                         boolean success = updateHits(contentVo);
                         if ( !success ){ LOGGER.error("article reading data update failed"); }
                         // 将文章缓存至redis
-                        contentCache(id,JsonUtil.obj2String(contentVo));
+                        redisUtil.contentCache(id,JsonUtil.obj2String(contentVo));
                         return contentVo;
                     } else {
                         ContentVoExample contentVoExample = new ContentVoExample();
                         contentVoExample.createCriteria().andSlugEqualTo(id);
                         List<ContentVo> contentVos = contentDao.selectByExampleWithBLOBs(contentVoExample);
-                        contentCache(id,JsonUtil.obj2String(contentVos.get(0)));
+                        redisUtil.contentCache(id,JsonUtil.obj2String(contentVos.get(0)));
                         if (contentVos.size() != 1) {
                             throw new TipException("query content by id and return is not one");
                         }
@@ -207,7 +202,7 @@ public class ContentServiceImpl implements IContentService {
     }
 
     @Override
-    public void updateArticle(ContentVo contents) {
+    public int updateArticle(ContentVo contents) {
         if (null == contents || null == contents.getCid()) {
             throw new TipException("文章对象不能为空");
         }
@@ -234,10 +229,11 @@ public class ContentServiceImpl implements IContentService {
         Integer cid = contents.getCid();
         contents.setContent(EmojiParser.parseToAliases(contents.getContent()));
 
-        contentDao.updateByPrimaryKeySelective(contents);
+        int i = contentDao.updateByPrimaryKeySelective(contents);
         relationshipService.deleteById(cid, null);
         metasService.saveMetas(cid, contents.getTags(), Types.TAG.getType());
         metasService.saveMetas(cid, contents.getCategories(), Types.CATEGORY.getType());
+        return i;
     }
 
     /**
@@ -254,24 +250,6 @@ public class ContentServiceImpl implements IContentService {
             }
         }
         return false;
-    }
-
-
-    /**
-     * 缓存文章
-     * @param key id
-     * @param value contentVo
-     */
-    private void contentCache(String key,String value) {
-        String cache;
-        cache = redisTemplate.opsForValue().get(key);
-        if ( StringUtils.isBlank(cache)){
-            synchronized ( this ){
-                if (StringUtils.isBlank(redisTemplate.opsForValue().get(key))){
-                    redisTemplate.opsForValue().set(key,value);
-                }
-            }
-        }
     }
 
 

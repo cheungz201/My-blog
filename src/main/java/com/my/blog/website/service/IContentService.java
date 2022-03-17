@@ -88,8 +88,9 @@ public interface IContentService {
      * 编辑文章
      *
      * @param contents
+     * @return
      */
-    void updateArticle(ContentVo contents);
+    int updateArticle(ContentVo contents);
 
 
     /**
