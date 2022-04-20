@@ -16,8 +16,8 @@ fork from [My Blog](https://github.com/ZHENFENG13/My-Blog) , 该作者是在 [Ta
 [ZHENFENG13](https://github.com/ZHENFENG13)
 [otale](https://github.com/otale)
 
-## 警告  
-本项目使用免费的bootstrapCDN源，cdn源随时可能失效。
+## 警告
+本项目使用免费的bootstrapCDN源，随时可能会失效。
 
-## 联系我  
-email:cheungz201@63.com
+## 联系我
+email:cheungz201@163.com
