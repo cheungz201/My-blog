@@ -17,6 +17,7 @@ import com.my.blog.website.dao.ContentVoMapper;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.data.redis.RedisConnectionFailureException;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
@@ -139,8 +140,27 @@ public class ContentServiceImpl implements IContentService {
                         return contentVos.get(0);
                     }
                 }
-            }catch (IOException e) {
-                e.printStackTrace();
+            } catch (IOException e) {
+                LOGGER.error(e.getMessage());
+            } catch (RedisConnectionFailureException e){
+                LOGGER.error(e.getMessage());
+                if (StringUtils.isNotBlank(id)){
+                    if (Tools.isNumber(id)) {
+                        contentVo = contentDao.selectByPrimaryKey(Integer.valueOf(id));
+                        boolean success = updateHits(contentVo);
+                        if ( !success ){ LOGGER.error("article reading data update failed"); }
+                        // 将文章缓存至redis
+                        return contentVo;
+                    } else {
+                        ContentVoExample contentVoExample = new ContentVoExample();
+                        contentVoExample.createCriteria().andSlugEqualTo(id);
+                        List<ContentVo> contentVos = contentDao.selectByExampleWithBLOBs(contentVoExample);
+                        if (contentVos.size() != 1) {
+                            throw new TipException("query content by id and return is not one");
+                        }
+                        return contentVos.get(0);
+                    }
+                }
             }
         }
         return null;
