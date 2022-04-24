@@ -1,7 +1,7 @@
 package com.my.blog.website.utils;
 
 import org.apache.commons.lang3.StringUtils;
-import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Resource;
@@ -20,7 +20,7 @@ import java.util.concurrent.TimeUnit;
 public class RedisUtil {
 
     @Resource
-    private RedisTemplate<String, String> redisTemplate;
+    private StringRedisTemplate stringRedisTemplate;
 
     /**
      * 缓存文章,默认缓存七天
@@ -29,11 +29,11 @@ public class RedisUtil {
      */
     public void contentCache(String key, String value) {
         String cache;
-        cache = redisTemplate.opsForValue().get(key);
+        cache = stringRedisTemplate.opsForValue().get(key);
         if (StringUtils.isBlank(cache)){
             synchronized ( this ){
-                if (StringUtils.isBlank(redisTemplate.opsForValue().get(key))){
-                    redisTemplate.opsForValue().set(key,value,7,TimeUnit.DAYS);
+                if (StringUtils.isBlank(stringRedisTemplate.opsForValue().get(key))){
+                    stringRedisTemplate.opsForValue().set(key,value,7,TimeUnit.DAYS);
                 }
             }
         }
@@ -45,7 +45,7 @@ public class RedisUtil {
      * @return
      */
     public boolean contentIsNull(String key){
-        String oldContent = redisTemplate.opsForValue().get(key);
+        String oldContent = stringRedisTemplate.opsForValue().get(key);
         if (StringUtils.isNotBlank(oldContent)){
             return false;
         }
@@ -58,7 +58,7 @@ public class RedisUtil {
      * @return
      */
     public String getCache(String key){
-        return redisTemplate.opsForValue().get(key);
+        return stringRedisTemplate.opsForValue().get(key);
     }
 
     /**
@@ -67,8 +67,8 @@ public class RedisUtil {
      * @param newValue
      */
     public void updateCache(String newKey,String newValue){
-        if (redisTemplate.hasKey(newKey)) {
-            redisTemplate.opsForValue().set(newKey,newValue,7,TimeUnit.DAYS);
+        if (stringRedisTemplate.hasKey(newKey)) {
+            stringRedisTemplate.opsForValue().set(newKey,newValue,7,TimeUnit.DAYS);
         }
     }
 }

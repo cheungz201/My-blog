@@ -77,7 +77,7 @@ public class IndexController extends BaseController {
      *
      * @return
      */
-    @GetMapping(value = {"/", "index"} )
+    @GetMapping(value = {"me"} )
     public void baseIndex(HttpServletRequest request,HttpServletResponse response) throws IOException {
         response.sendRedirect(request.getContextPath()+"/home/index.html");
     }
@@ -87,7 +87,7 @@ public class IndexController extends BaseController {
      *
      * @return
      */
-    @GetMapping("/blog")
+    @GetMapping({"","/index"})
     public String index(HttpServletRequest request, @RequestParam(value = "limit", defaultValue = "12") int limit) {
         return this.index(request, 1, limit);
     }
