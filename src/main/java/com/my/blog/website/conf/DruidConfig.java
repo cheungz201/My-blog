@@ -2,6 +2,7 @@ package com.my.blog.website.conf;
 
 import com.alibaba.druid.pool.DruidDataSource;
 import com.alibaba.druid.support.http.StatViewServlet;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.boot.web.servlet.ServletRegistrationBean;
 import org.springframework.context.annotation.Bean;
@@ -22,6 +23,12 @@ import java.util.Map;
 @Configuration
 public class DruidConfig {
 
+    @Value("${druid.username}")
+    private String username;
+
+    @Value("${druid.password}")
+    private String password;
+
     @Bean
     @ConfigurationProperties(prefix = "spring.datasource")
     public DataSource dataSource() throws SQLException {
@@ -38,9 +45,9 @@ public class DruidConfig {
         //禁用HTML页面上的“Rest All”功能
         initParameters.put("resetEnable", "false");
         //++监控页面登录用户名
-        initParameters.put("loginUsername", "admin");
+        initParameters.put("loginUsername", username);
         //++监控页面登录用户密码
-        initParameters.put("loginPassword", "123456");
+        initParameters.put("loginPassword", password);
         //ip黑名单
         initParameters.put("deny", "");
         //ip白名单（没有配置或者为空，则允许所有访问）
