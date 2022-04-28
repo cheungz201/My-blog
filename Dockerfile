@@ -1,3 +1,4 @@
+#simple Dockerfile
 FROM java:8
 ADD blog.jar /usr/local/blog.jar
 EXPOSE 80
