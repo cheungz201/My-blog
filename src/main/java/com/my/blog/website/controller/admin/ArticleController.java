@@ -2,6 +2,7 @@ package com.my.blog.website.controller.admin;
 
 
 import com.github.pagehelper.PageInfo;
+import com.my.blog.website.cache.StringCache;
 import com.my.blog.website.controller.BaseController;
 import com.my.blog.website.dto.LogActions;
 import com.my.blog.website.dto.Types;
@@ -14,7 +15,6 @@ import com.my.blog.website.modal.Vo.UserVo;
 import com.my.blog.website.service.IContentService;
 import com.my.blog.website.service.ILogService;
 import com.my.blog.website.service.IMetaService;
-import com.my.blog.website.utils.RedisUtil;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -47,7 +47,8 @@ public class ArticleController extends BaseController {
     private ILogService logService;
 
     @Resource
-    private RedisUtil redisUtil;
+    private StringCache redisStringCache;
+
 
     /**
      * 文章列表
@@ -141,7 +142,7 @@ public class ArticleController extends BaseController {
         contents.setType(Types.ARTICLE.getType());
         try {
             contentsService.updateArticle(contents);
-            redisUtil.updateCache(String.valueOf(contents.getCid()), SerializationUtil.obj2String(contents));
+            redisStringCache.updateCache(String.valueOf(contents.getCid()), SerializationUtil.obj2String(contents));
         } catch (Exception e) {
             String msg = "文章编辑失败";
             msg = exceptionProcess(e,msg);
@@ -163,6 +164,7 @@ public class ArticleController extends BaseController {
     public RestResponseBo delete(@RequestParam int cid, HttpServletRequest request) {
         try {
             contentsService.deleteByCid(cid);
+            redisStringCache.deleteCache(String.valueOf(cid));
             logService.insertLog(LogActions.DEL_ARTICLE.getAction(), cid + "", request.getRemoteAddr(), this.getUid(request));
         } catch (Exception e) {
             String msg = "文章删除失败";

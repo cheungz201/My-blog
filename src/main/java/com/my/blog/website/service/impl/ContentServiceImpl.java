@@ -2,7 +2,9 @@ package com.my.blog.website.service.impl;
 
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
+import com.my.blog.website.cache.StringCache;
 import com.my.blog.website.constant.WebConst;
+import com.my.blog.website.dao.ContentVoMapper;
 import com.my.blog.website.dao.MetaVoMapper;
 import com.my.blog.website.dto.Types;
 import com.my.blog.website.exception.TipException;
@@ -11,9 +13,11 @@ import com.my.blog.website.modal.Vo.ContentVoExample;
 import com.my.blog.website.service.IContentService;
 import com.my.blog.website.service.IMetaService;
 import com.my.blog.website.service.IRelationshipService;
-import com.my.blog.website.utils.*;
+import com.my.blog.website.utils.DateKit;
+import com.my.blog.website.utils.JsonUtil;
+import com.my.blog.website.utils.TaleUtils;
+import com.my.blog.website.utils.Tools;
 import com.vdurmont.emoji.EmojiParser;
-import com.my.blog.website.dao.ContentVoMapper;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -23,6 +27,7 @@ import org.springframework.stereotype.Service;
 import javax.annotation.Resource;
 import java.io.IOException;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 /**
  * Created by Administrator on 2021/3/13 013.
@@ -44,7 +49,7 @@ public class ContentServiceImpl implements IContentService {
     private IMetaService metasService;
 
     @Resource
-    private RedisUtil redisUtil;
+    private StringCache redisStringCache;
 
     @Override
     public void publish(ContentVo contents) {
@@ -116,7 +121,7 @@ public class ContentServiceImpl implements IContentService {
         ContentVo contentVo;
         if (StringUtils.isNotBlank(id)) {
             try{
-                String content = redisUtil.getCache(id);
+                String content = redisStringCache.getCache(id);
                 if (StringUtils.isNotBlank(content)){
                     if ( (contentVo = (JsonUtil.string2Obj(content,ContentVo.class))) != null ){
                         return contentVo;
@@ -127,13 +132,13 @@ public class ContentServiceImpl implements IContentService {
                         boolean success = updateHits(contentVo);
                         if ( !success ){ LOGGER.error("article reading data update failed"); }
                         // 将文章缓存至redis
-                        redisUtil.contentCache(id,JsonUtil.obj2String(contentVo));
+                        redisStringCache.addCacheByTime(id,JsonUtil.obj2String(contentVo),7, TimeUnit.DAYS);
                         return contentVo;
                     } else {
                         ContentVoExample contentVoExample = new ContentVoExample();
                         contentVoExample.createCriteria().andSlugEqualTo(id);
                         List<ContentVo> contentVos = contentDao.selectByExampleWithBLOBs(contentVoExample);
-                        redisUtil.contentCache(id,JsonUtil.obj2String(contentVos.get(0)));
+                        redisStringCache.addCacheByTime(id,JsonUtil.obj2String(contentVos.get(0)),7,TimeUnit.DAYS);
                         if (contentVos.size() != 1) {
                             throw new TipException("query content by id and return is not one");
                         }

@@ -1,18 +1,18 @@
 package com.my.blog.website.controller.admin;
 
 import com.github.pagehelper.PageInfo;
-import com.my.blog.website.exception.TipException;
-import com.my.blog.website.modal.Bo.RestResponseBo;
-import com.my.blog.website.modal.Vo.UserVo;
-import com.my.blog.website.service.ILogService;
+import com.my.blog.website.cache.StringCache;
 import com.my.blog.website.constant.WebConst;
 import com.my.blog.website.controller.BaseController;
 import com.my.blog.website.dto.LogActions;
 import com.my.blog.website.dto.Types;
+import com.my.blog.website.exception.TipException;
+import com.my.blog.website.modal.Bo.RestResponseBo;
 import com.my.blog.website.modal.Vo.ContentVo;
 import com.my.blog.website.modal.Vo.ContentVoExample;
+import com.my.blog.website.modal.Vo.UserVo;
 import com.my.blog.website.service.IContentService;
-import com.my.blog.website.utils.RedisUtil;
+import com.my.blog.website.service.ILogService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Controller;
@@ -39,7 +39,8 @@ public class PageController extends BaseController {
     private ILogService logService;
 
     @Resource
-    private RedisUtil redisUtil;
+    private StringCache redisStringCache;
+
 
     @GetMapping(value = "")
     public String index(HttpServletRequest request) {
@@ -125,7 +126,7 @@ public class PageController extends BaseController {
         try {
             int i = contentsService.updateArticle(contents);
             if (i == 1){
-                redisUtil.updateCache(String.valueOf(contents.getCid()), SerializationUtil.obj2String(contents));
+                redisStringCache.updateCache(String.valueOf(contents.getCid()), SerializationUtil.obj2String(contents));
             }
         } catch (Exception e) {
             String msg = "页面编辑失败";

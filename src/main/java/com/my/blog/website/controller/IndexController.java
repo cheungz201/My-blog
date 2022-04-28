@@ -2,33 +2,32 @@ package com.my.blog.website.controller;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.github.pagehelper.PageInfo;
+import com.my.blog.website.cache.StringCache;
 import com.my.blog.website.constant.WebConst;
 import com.my.blog.website.dto.ErrorCode;
 import com.my.blog.website.dto.MetaDto;
 import com.my.blog.website.dto.Types;
 import com.my.blog.website.exception.TipException;
 import com.my.blog.website.modal.Bo.ArchiveBo;
+import com.my.blog.website.modal.Bo.CommentBo;
 import com.my.blog.website.modal.Bo.RestResponseBo;
 import com.my.blog.website.modal.Vo.CommentVo;
-import com.my.blog.website.modal.Vo.MetaVo;
-import com.my.blog.website.service.IMetaService;
-import com.my.blog.website.service.ISiteService;
-import com.my.blog.website.utils.PatternKit;
-import com.my.blog.website.utils.RedisUtil;
-import com.my.blog.website.utils.TaleUtils;
-import com.vdurmont.emoji.EmojiParser;
-import com.my.blog.website.modal.Bo.CommentBo;
 import com.my.blog.website.modal.Vo.ContentVo;
+import com.my.blog.website.modal.Vo.MetaVo;
 import com.my.blog.website.service.ICommentService;
 import com.my.blog.website.service.IContentService;
+import com.my.blog.website.service.IMetaService;
+import com.my.blog.website.service.ISiteService;
 import com.my.blog.website.utils.IPKit;
+import com.my.blog.website.utils.PatternKit;
+import com.my.blog.website.utils.TaleUtils;
+import com.vdurmont.emoji.EmojiParser;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Controller;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.servlet.ModelAndView;
 import xyz.cheungz.httphelper.utils.SerializationUtil;
 
 import javax.annotation.Resource;
@@ -39,6 +38,7 @@ import javax.servlet.http.HttpSession;
 import java.io.IOException;
 import java.net.URLEncoder;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 /**
  * 首页
@@ -70,7 +70,8 @@ public class IndexController extends BaseController {
     private ISiteService siteService;
 
     @Resource
-    private RedisUtil redisUtil;
+    private StringCache redisStringCache;
+
 
     /**
      * 主页
@@ -324,14 +325,14 @@ public class IndexController extends BaseController {
     public String page(@PathVariable String pagename, HttpServletRequest request) {
         ContentVo contents = null;
         try {
-            if (redisUtil.contentIsNull(pagename)) {
+            if (redisStringCache.exist(pagename)) {
                 contents = contentService.getContents(pagename);
                 if (null == contents) {
                     return this.render_404();
                 }
-                redisUtil.contentCache(pagename, SerializationUtil.obj2String(contents));
+                redisStringCache.addCacheByTime(pagename, SerializationUtil.obj2String(contents),7, TimeUnit.DAYS);
             } else {
-                contents = SerializationUtil.string2Obj(redisUtil.getCache(pagename), ContentVo.class);
+                contents = SerializationUtil.string2Obj(redisStringCache.getCache(pagename), ContentVo.class);
             }
         } catch (JsonProcessingException e) {
             e.printStackTrace();
