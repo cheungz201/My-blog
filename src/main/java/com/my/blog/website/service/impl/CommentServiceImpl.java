@@ -1,7 +1,9 @@
 package com.my.blog.website.service.impl;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
+import com.my.blog.website.cache.StringCache;
 import com.my.blog.website.exception.TipException;
 import com.my.blog.website.utils.DateKit;
 import com.my.blog.website.utils.TaleUtils;
@@ -16,16 +18,19 @@ import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
+import xyz.cheungz.httphelper.utils.SerializationUtil;
 
 import javax.annotation.Resource;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 /**
  * Created by BlueT on 2021/3/16.
  */
 @Service
 public class CommentServiceImpl implements ICommentService {
+    private static final String COMMENTS = "comments";
     private static final Logger LOGGER = LoggerFactory.getLogger(CommentServiceImpl.class);
 
     @Resource
@@ -33,6 +38,9 @@ public class CommentServiceImpl implements ICommentService {
 
     @Resource
     private IContentService contentService;
+
+    @Resource
+    private StringCache redisStringCache;
 
     @Override
     public void insertComment(CommentVo comments) {
@@ -61,7 +69,7 @@ public class CommentServiceImpl implements ICommentService {
         comments.setOwnerId(contents.getAuthorId());
         comments.setCreated(DateKit.getCurrentUnixTime());
         commentDao.insertSelective(comments);
-
+        redisStringCache.deleteCache(comments.getCid()+COMMENTS);
         ContentVo temp = new ContentVo();
         temp.setCid(contents.getCid());
         temp.setCommentsNum(contents.getCommentsNum() + 1);
@@ -71,25 +79,48 @@ public class CommentServiceImpl implements ICommentService {
     @Override
     public PageInfo<CommentBo> getComments(Integer cid, int page, int limit) {
 
+        PageInfo<CommentBo> returnBo = null;
         if (null != cid) {
-            PageHelper.startPage(page, limit);
-            CommentVoExample commentVoExample = new CommentVoExample();
-            commentVoExample.createCriteria().andCidEqualTo(cid).andParentEqualTo(0);
-            commentVoExample.setOrderByClause("coid desc");
-            List<CommentVo> parents = commentDao.selectByExampleWithBLOBs(commentVoExample);
-            PageInfo<CommentVo> commentPaginator = new PageInfo<>(parents);
-            PageInfo<CommentBo> returnBo = copyPageInfo(commentPaginator);
-            if (parents.size() != 0) {
-                List<CommentBo> comments = new ArrayList<>(parents.size());
-                parents.forEach(parent -> {
-                    CommentBo comment = new CommentBo(parent);
-                    comments.add(comment);
-                });
-                returnBo.setList(comments);
+            String cids = cid + COMMENTS;
+            String cache = redisStringCache.getCache(cids);
+            //缓存不为空
+            if (StringUtils.isNotBlank(cache)) {
+                try {
+                    returnBo = SerializationUtil.string2Obj(cache, PageInfo.class);
+                } catch (JsonProcessingException e) {
+                    e.printStackTrace();
+                    return null;
+                }
+            } else {   //缓存为空从数据库读取，并且将数据缓存至redis
+                String s = null;
+                PageHelper.startPage(page, limit);
+                CommentVoExample commentVoExample = new CommentVoExample();
+                commentVoExample.createCriteria().andCidEqualTo(cid).andParentEqualTo(0);
+                commentVoExample.setOrderByClause("coid desc");
+                List<CommentVo> parents = commentDao.selectByExampleWithBLOBs(commentVoExample);
+                PageInfo<CommentVo> commentPaginator = new PageInfo<>(parents);
+                returnBo = copyPageInfo(commentPaginator);
+                if (parents.size() != 0) {
+                    List<CommentBo> comments = new ArrayList<>(parents.size());
+                    parents.forEach(parent -> {
+                        CommentBo comment = new CommentBo(parent);
+                        comments.add(comment);
+                    });
+                    returnBo.setList(comments);
+                }
+                if (returnBo.getSize() != 0){
+                    try {
+                        s = SerializationUtil.obj2String(returnBo);
+                    } catch (JsonProcessingException e) {
+                        e.printStackTrace();
+                        return returnBo;
+                    }
+                    redisStringCache.addCacheByTime(cids,s,7, TimeUnit.DAYS);
+                }
+                return returnBo;
             }
-            return returnBo;
         }
-        return null;
+        return returnBo;
     }
 
     @Override
@@ -113,6 +144,7 @@ public class CommentServiceImpl implements ICommentService {
             throw new TipException("主键为空");
         }
         commentDao.deleteByPrimaryKey(coid);
+        redisStringCache.deleteCache(cid+COMMENTS);
         ContentVo contents = contentService.getContents(cid + "");
         if (null != contents && contents.getCommentsNum() > 0) {
             ContentVo temp = new ContentVo();
