@@ -3,7 +3,7 @@ package com.my.blog.website.utils;
 import com.my.blog.website.constant.WebConst;
 import com.my.blog.website.controller.admin.AttachController;
 import com.my.blog.website.exception.TipException;
-import com.my.blog.website.modal.Vo.UserVo;
+import com.my.blog.website.model.Vo.UserVo;
 import org.apache.commons.lang3.StringUtils;
 import org.commonmark.node.Node;
 import org.commonmark.parser.Parser;
