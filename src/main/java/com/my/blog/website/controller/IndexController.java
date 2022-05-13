@@ -324,15 +324,17 @@ public class IndexController extends BaseController {
     @GetMapping(value = "/{pagename}")
     public String page(@PathVariable String pagename, HttpServletRequest request) {
         ContentVo contents = null;
+        String cache;
         try {
-            if (redisStringCache.exist(pagename)) {
+            if (StringUtils.isNotBlank((cache = redisStringCache.getCache(pagename)))) {
+                contents = SerializationUtil.string2Obj(cache, ContentVo.class);
+            } else {
+                // 不存在缓存，从数据库读取并加入至缓存
                 contents = contentService.getContents(pagename);
                 if (null == contents) {
                     return this.render_404();
                 }
                 redisStringCache.addCacheByTime(pagename, SerializationUtil.obj2String(contents),7, TimeUnit.DAYS);
-            } else {
-                contents = SerializationUtil.string2Obj(redisStringCache.getCache(pagename), ContentVo.class);
             }
         } catch (JsonProcessingException e) {
             e.printStackTrace();

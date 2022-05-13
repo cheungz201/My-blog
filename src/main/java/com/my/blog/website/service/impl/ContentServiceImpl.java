@@ -138,6 +138,9 @@ public class ContentServiceImpl implements IContentService {
                         ContentVoExample contentVoExample = new ContentVoExample();
                         contentVoExample.createCriteria().andSlugEqualTo(id);
                         List<ContentVo> contentVos = contentDao.selectByExampleWithBLOBs(contentVoExample);
+                        if (contentVos.isEmpty()){
+                            return null;
+                        }
                         redisStringCache.addCacheByTime(id,JsonUtil.obj2String(contentVos.get(0)),7,TimeUnit.DAYS);
                         if (contentVos.size() != 1) {
                             throw new TipException("query content by id and return is not one");
@@ -160,6 +163,9 @@ public class ContentServiceImpl implements IContentService {
                         ContentVoExample contentVoExample = new ContentVoExample();
                         contentVoExample.createCriteria().andSlugEqualTo(id);
                         List<ContentVo> contentVos = contentDao.selectByExampleWithBLOBs(contentVoExample);
+                        if (contentVos.isEmpty()){
+                            return null;
+                        }
                         if (contentVos.size() != 1) {
                             throw new TipException("query content by id and return is not one");
                         }
