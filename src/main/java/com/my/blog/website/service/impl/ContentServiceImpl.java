@@ -157,7 +157,6 @@ public class ContentServiceImpl implements IContentService {
                         contentVo = contentDao.selectByPrimaryKey(Integer.valueOf(id));
                         boolean success = updateHits(contentVo);
                         if ( !success ){ LOGGER.error("article reading data update failed"); }
-                        // 将文章缓存至redis
                         return contentVo;
                     } else {
                         ContentVoExample contentVoExample = new ContentVoExample();
