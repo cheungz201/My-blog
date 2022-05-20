@@ -124,6 +124,7 @@ public class ContentServiceImpl implements IContentService {
                 String content = redisStringCache.getCache(id);
                 if (StringUtils.isNotBlank(content)){
                     if ( (contentVo = (JsonUtil.string2Obj(content,ContentVo.class))) != null ){
+                        contentVo.setHits(contentVo.getHits()+1);
                         return contentVo;
                     }
                 }else {

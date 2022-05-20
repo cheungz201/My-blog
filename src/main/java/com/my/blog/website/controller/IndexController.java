@@ -383,7 +383,7 @@ public class IndexController extends BaseController {
      */
     @Transactional(rollbackFor = TipException.class)
     void updateArticleHit(Integer cid, Integer chits) {
-        Integer hits = cache.hget("article", "hits");
+        Integer hits = cache.hget("article", "hits"+cid);
         if (chits == null) {
             chits = 0;
         }
@@ -392,10 +392,13 @@ public class IndexController extends BaseController {
             ContentVo temp = new ContentVo();
             temp.setCid(cid);
             temp.setHits(chits + hits);
+            // 每次更新数据库中的点击量时就删除文章在redis中的缓存,否则点击量无法更新
+            // 可能存在数据量丢失,但是每次丢失的数据不会超过 WebConst.HIT_EXCEED = 10
+            redisStringCache.deleteCache(cid+"");
             contentService.updateContentByCid(temp);
-            cache.hset("article", "hits", 1);
+            cache.hset("article", "hits"+cid, null);
         } else {
-            cache.hset("article", "hits", hits);
+            cache.hset("article", "hits"+cid, hits);
         }
     }
 
