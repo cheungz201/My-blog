@@ -108,7 +108,7 @@ public class CommentServiceImpl implements ICommentService {
                 returnBo = queryDataToCache(cid,page,limit);
                 return returnBo;
             } catch (JsonProcessingException je) {
-                je.printStackTrace();
+                LOGGER.error(je.getMessage());
             }
         }
         return returnBo;

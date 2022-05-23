@@ -232,7 +232,7 @@ public class SiteServiceImpl implements ISiteService {
                 try {
                     os.close();
                 } catch (IOException var2) {
-                    var2.printStackTrace();
+                    LOGGER.error(var2.getMessage());
                 }
             }
         }

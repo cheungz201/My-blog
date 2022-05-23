@@ -105,8 +105,7 @@ public class AuthController extends BaseController {
             //response.sendRedirect(Commons.site_url());
             response.sendRedirect(Commons.site_login());
         } catch (IOException e) {
-            e.printStackTrace();
-            LOGGER.error("注销失败", e);
+            LOGGER.error("注销失败,{}", e);
         }
     }
 }

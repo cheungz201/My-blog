@@ -89,7 +89,7 @@ public class AttachController extends BaseController {
                     try {
                         FileCopyUtils.copy(multipartFile.getInputStream(), new FileOutputStream(file));
                     } catch (IOException e) {
-                        e.printStackTrace();
+                        LOGGER.error(e.getMessage());
                     }
                     attachService.save(fname, fkey, ftype, uid);
                 } else {

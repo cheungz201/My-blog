@@ -337,7 +337,7 @@ public class IndexController extends BaseController {
                 redisStringCache.addCacheByTime(pagename, SerializationUtil.obj2String(contents),7, TimeUnit.DAYS);
             }
         } catch (JsonProcessingException e) {
-            e.printStackTrace();
+            LOGGER.error(e.getMessage());
             return this.render("comm/error_500");
         }
         if (contents.getAllowComment()) {
