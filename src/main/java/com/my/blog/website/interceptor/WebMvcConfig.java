@@ -27,6 +27,9 @@ public class WebMvcConfig implements WebMvcConfigurer {
     @Resource
     private BaseInterceptor baseInterceptor;
 
+    @Resource
+    private BlackInterceptor blackInterceptor;
+
     /**
      * @Time:  2021/5/29 10:01
      * @Params:
@@ -35,6 +38,7 @@ public class WebMvcConfig implements WebMvcConfigurer {
      **/
     @Override
     public void addInterceptors(InterceptorRegistry interceptorRegistry) {
+        interceptorRegistry.addInterceptor(blackInterceptor);
         interceptorRegistry.addInterceptor(baseInterceptor)
                 .excludePathPatterns("/js/**","/css/**","/img/**","/imgs/**","js/**","css/**","img/**","imgs/**");
     }
